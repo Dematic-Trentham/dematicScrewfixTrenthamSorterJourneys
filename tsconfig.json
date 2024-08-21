@@ -15,12 +15,7 @@
     "isolatedModules": true,
     "baseUrl": ".",
     // "resolveJsonModule": true
-<<<<<<< HEAD
-    "suppressImplicitAnyIndexErrors": true,
-    "ignoreDeprecations": "5.0",
-=======
     //"suppressImplicitAnyIndexErrors": true,
->>>>>>> 5f27e9f8c07659a4051fa0f2766f09c94c19767c
     "sourceMap": true
   },
   "include": ["src/**/*", "src/**/*.ts", "src/**/*.tsx", "src/**/**/**/*.ts"],

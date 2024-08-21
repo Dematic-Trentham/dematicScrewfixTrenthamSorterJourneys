@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "name": "set_Points_To_DB",
-=======
-  "name": "ShuttleFaultsToDB",
->>>>>>> 4bc6a6b1ec1931d5edd56c525af6484747622557
+  "name": "@sorter/journeys",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -15,23 +11,32 @@
     "startDevWatch": "nodemon build/index.js",
     "startDev2Watch": "nodemon src/index.ts",
     "startDevDockInspect": "nodemon build/index.js --inspect-brk=0.0.0.0",
-    "build": "tsc --watch"
+    "build": "tsc --watch",
+    "prisma-merge": "npx prismix  && prisma format && prisma generate && echo 'complete!'",
+    "prisma-pull": "npx prisma db pull",
+    "prisma-push": "npx prisma db push"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^5.16.0",
     "bluebird": "^3.7.2",
     "dematic-master-lib": "github:jdematic/Dematic-Master-Lib#master",
+    "dotenv": "^16.4.5",
     "moment": "^2.29.4",
     "mysql": "^2.18.1",
     "node-cron": "^3.0.2",
-    "node-snap7": "^1.0.6"
+    "node-snap7": "^1.0.6",
+    "ssh2-sftp-client": "^11.0.0"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.38",
     "@types/mysql": "^2.15.21",
     "@types/node-cron": "^3.0.7",
-    "@types/node-snap7": "^0.2.21"
+    "@types/node-snap7": "^0.2.21",
+    "@types/ssh2-sftp-client": "^9.0.3",
+    "prisma": "^5.16.0",
+    "prismix": "^1.0.22"
   }
 }

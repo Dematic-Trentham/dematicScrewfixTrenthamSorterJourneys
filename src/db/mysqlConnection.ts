@@ -1,19 +1,7 @@
 //Service for Dematic Dashboard Screwfix trentham to collect data
 //Created by: JWL
 //Date: 2022-12-30
-<<<<<<< HEAD
-//Last modified: 2023/09/04 13:03:35
-=======
-<<<<<<< HEAD
-//Last modified: 2023/07/02 09:01:28
-=======
-<<<<<<< HEAD
-//Last modified: 2023/07/02 09:01:28
-=======
 //Last modified: 2023/08/05 18:25:18
->>>>>>> 125051a5983e30d4b42cd79046f74bc8c0527cf3
->>>>>>> 4bc6a6b1ec1931d5edd56c525af6484747622557
->>>>>>> 5f27e9f8c07659a4051fa0f2766f09c94c19767c
 //Version: 0.0.1
 
 import * as mysql from "mysql";
@@ -62,12 +50,6 @@ function isDocker() {
   }
 }
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
 function escapedInput(userInput: string) {
   return mysql.escape(userInput);
 }
@@ -83,9 +65,6 @@ function allInput(userInput: string) {
   return mysql.escape(userInput).replace(/'/g, "").replace(/\\/g, "").replace(/\\n/g, "");
 }
 
->>>>>>> 125051a5983e30d4b42cd79046f74bc8c0527cf3
->>>>>>> 4bc6a6b1ec1931d5edd56c525af6484747622557
->>>>>>> 5f27e9f8c07659a4051fa0f2766f09c94c19767c
 //export the functions
 export default {
   query,
