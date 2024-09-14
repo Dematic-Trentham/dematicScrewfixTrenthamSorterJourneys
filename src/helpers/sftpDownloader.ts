@@ -14,6 +14,8 @@ export type sftpClientSettings = {
 };
 
 export async function downloadFileFromSFTPHost(clientSettings: sftpClientSettings, localDownloadPath: string, pathToDownload: string) {
+  //console.log(`Downloading ${pathToDownload} to ${localDownloadPath}`);
+
   //create a new ftp client
   const ftp = new ssh2SftpClient();
 
@@ -60,6 +62,10 @@ export async function downloadFilesFromSFTPHost(clientSettings: sftpClientSettin
 
 //download all files in a directory, that are not already in the local directory
 export async function downloadNewFilesFromSFTPHost(clientSettings: sftpClientSettings, localDownloadPath: string, pathToDownload: string) {
+  if (!fs.existsSync("./trace")) {
+    fs.mkdirSync("./trace");
+  }
+
   //get the list of files in the directory
   const files = await getFilesInDirectory(clientSettings, pathToDownload);
 
