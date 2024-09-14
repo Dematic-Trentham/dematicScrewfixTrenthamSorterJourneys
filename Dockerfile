@@ -1,25 +1,51 @@
-FROM node:lts-alpine
-RUN apk add --no-cache --virtual .gyp python3 make g++
+FROM node:18-alpine AS base
 
+# Stage 1: Builder
+FROM base as builder
+
+# Set the working directory
 WORKDIR /app
-
-RUN mkdir -p /usr/app
-
-WORKDIR /usr/app
-
-COPY package.json /usr/app
-#COPY package-lock.json /usr/app
 
 RUN apk add --no-cache git
 
-RUN npm install --force
+# Copy package.json and package-lock.json
+COPY package.json ./
 
-RUN npm install -g nodemon
-RUN npm install forever -g
+# Install dependencies
+RUN npm install --legacy-peer-deps
+RUN npm install -g typescript
 
-COPY ./build /usr/app
 
-EXPOSE 3000
+# Copy the rest of the application
+COPY . .
 
-#CMD ["nodemon", "index.js"]
-CMD ["node", "index.js"]
+RUN npm run prisma-merge
+
+# Build the application
+RUN npm run buildOnce
+RUN npm run packageJsonStripper
+run ls -l
+
+# Stage 2: Production image
+FROM base as production
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the built application from the builder stage
+COPY --from=builder /app/build ./build
+
+# Copy package.json and package-lock.json
+COPY --from=builder /app/packageProduction.json ./package.json
+
+RUN ls -l
+
+# Install only production dependencies
+RUN npm install
+
+# Copy the Prisma client from the builder stage
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# set the memory limit to  3gb and run the application
+CMD ["node", "--max-old-space-size=3072", "build/index.js"]

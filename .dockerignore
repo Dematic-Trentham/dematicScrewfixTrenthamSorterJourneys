@@ -1,2 +1,27 @@
-node_modules
-npm-debug.log
+# Ignore files and directories commonly excluded in Docker builds
+
+# Ignore build artifacts
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Ignore development files
+node_modules/
+bower_components/
+.git/
+.vscode/
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+#public folder
+public/
