@@ -39,6 +39,6 @@ jobs:
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
       - name: Push to Docker Hub
         run: |
-          docker tag dematicscrewfixtrenthamdashboard:latest jwlyons/dematicscrewfixtrenthamdashboard:testing
-          docker push jwlyons/dematicscrewfixtrenthamdashboard:testing
+          docker tag screwfix-trentham-sorterjourneys:latest jwlyons/screwfix-trentham-sorterjourneys:testing
+          docker push jwlyons/screwfix-trentham-sorterjourneys:testing
           curl -H "Authorization: Bearer tokentokentokenlikeme" 192.168.1.100:8081/v1/update
