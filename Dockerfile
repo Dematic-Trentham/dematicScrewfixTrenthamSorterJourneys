@@ -48,4 +48,4 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # set the memory limit to  3gb and run the application
-CMD ["node", "--max-old-space-size=3072", "build/index.js"]
+CMD ["node", "--max-old-space-size=5072", "build/index.js"]

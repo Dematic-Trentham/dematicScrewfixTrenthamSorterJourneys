@@ -5,14 +5,23 @@ import path from "path";
 import { devLog, devError, log, logError } from "./helpers/logging";
 import { mergeTraceFilesIntoArray } from "./helpers/fileSystem.js";
 import db from "./db/db.js";
+import { mainProcessReporter } from "./index.js";
 
-export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: string) {
-  console.log(`Running analysis on ${requestedUL} for request ${requestID}`);
+export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: string, requestedDay: string) {
+  mainProcessReporter("Processing a request");
+
+  console.log(`111 Running analysis on ${requestedUL} for request ${requestID} for ${requestedDay}`);
 
   await updateStatusStep(requestID, "Merging Trace Files Into Array");
 
   //lets read in all the files in the trace directory
-  const totalTraceArray = await mergeTraceFilesIntoArray("./trace");
+  const totalTraceArray = await mergeTraceFilesIntoArray(requestedDay, requestID);
+
+  const dateString = totalTraceArray[1].split("New day: ")[1];
+
+  //change mm/dd/yyyy to yyyy-mmm-dd
+  const dateArray = dateString.split("/");
+  const newDateString = dateArray[2] + "-" + dateArray[0] + "-" + dateArray[1];
 
   await updateStatusStep(requestID, "Finding Offloads for parcel");
 
@@ -32,19 +41,51 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
   console.log(offloadLines);
 
   if (offloadLines.length === 0) {
-    await updateStatusStep(requestID, "No offloads found for parcel");
+    console.log("222 No offloads found for parcel for requested day" + requestedDay);
 
-    await db.sorterJourneyRequests.update({
-      where: {
-        id: requestID,
-      },
-      data: {
-        status: "COMPLETED",
-        journey: "",
-        processingCompletedDate: new Date(),
-        currentStatusStep: "Completed",
-      },
-    });
+    await updateStatusStep(requestID, "No offloads found for parcel for requested day" + requestedDay);
+
+    //check what has been requested "requestedDay" ,  try the previous day
+    let previousDay = "";
+
+    if (requestedDay === "./trace/today") {
+      previousDay = "1dayago";
+    } else if (requestedDay === "./trace/1dayago") {
+      previousDay = "2daysago";
+    } else if (requestedDay === "./trace/2daysago") {
+      previousDay = "3daysago";
+    } else if (requestedDay === "./trace/3daysago") {
+      previousDay = "4daysago";
+    } else if (requestedDay === "./trace/4daysago") {
+      previousDay = "5daysago";
+    } else if (requestedDay === "./trace/5daysago") {
+      previousDay = "6daysago";
+    } else if (requestedDay === "./trace/6daysago") {
+      previousDay = "7daysago";
+    } else {
+      console.log(`333 Checking previous day ${previousDay} ` + "7 days checked");
+
+      await updateStatusStep(requestID, "No offloads found for parcel for requested day" + requestedDay + " last 7 days checked");
+
+      await db.sorterJourneyRequests.update({
+        where: {
+          id: requestID,
+        },
+        data: {
+          status: "COMPLETED",
+          journey: "[]",
+          processingCompletedDate: new Date(),
+          currentStatusStep: "Completed",
+        },
+      });
+
+      return;
+    }
+    await updateStatusStep(requestID, "Checking previous day " + previousDay);
+    console.log(`Checking previous day ${previousDay}`);
+
+    await runAnalysisOnRequestedUL(requestedUL, requestID, "./trace/" + previousDay);
+
     return;
   }
 
@@ -55,7 +96,7 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
     console.log(`Processing offload line ${x + 1} of ${offloadLines.length}`);
     await updateStatusStep(requestID, `Processing offload line ${x + 1} of ${offloadLines.length}`);
 
-    const journey = await analysisTraceLine(totalTraceArray, offloadLine.lineNumber);
+    const journey = await analysisTraceLine(totalTraceArray, offloadLine.lineNumber, newDateString);
 
     journeyArray.push(journey);
   }
@@ -78,9 +119,11 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
     console.log("Prisma 1 error");
     console.log(e);
   }
+
+  mainProcessReporter("Completed a request");
 }
 
-async function analysisTraceLine(totalTraceArray: string[], lineNumber: number) {
+async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, dateString: string) {
   console.log(`Analyzing trace line ${lineNumber}`);
 
   //get all the details of the line
@@ -90,7 +133,7 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number) 
 
   const UL = line.split("code=<")[1].split(">")[0];
 
-  const offloadTime = line.split("(")[1].split(")")[0];
+  const offloadTime = dateString + " " + line.split("(")[1].split(")")[0];
 
   const cellNumber = line.split("Cell=")[1].split(" ")[0];
   const inductNumber = line.split("is=")[1].split(" ")[0];
@@ -147,8 +190,8 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number) 
   // console.log(journeyLines);
 }
 
-async function updateStatusStep(requestID: string, status: string) {
-  console.log(`Updating status of request ${requestID} to ${status}`);
+export async function updateStatusStep(requestID: string, status: string) {
+  //console.log(`Updating status of request ${requestID} to ${status}`);
 
   const result = await db.sorterJourneyRequests.update({
     where: {

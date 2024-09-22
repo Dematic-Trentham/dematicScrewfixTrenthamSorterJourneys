@@ -1,7 +1,7 @@
 //Service for Dematic Dashboard Screwfix
 //Created by: JWL
 //Date: 2023/02/02 02:51:41
-//Last modified: 2024/09/13 20:49:43
+//Last modified: 2024/09/22 14:07:35
 //Version: 1.0.9
 
 //imports
@@ -28,6 +28,8 @@ const hostConfig: sftpClientSettings = {
 
 //import process tracker and start the process
 import ProcessTracker from "./processTracker.js";
+import { request } from "https";
+import { mergeTraceFilesIntoArray } from "./helpers/fileSystem.js";
 ProcessTracker.startProcess("sorterJourneyTrace");
 
 //reboot every day at 00:05
@@ -41,27 +43,23 @@ let inStartUp = true;
 startUp();
 
 async function startUp() {
-  if (process.env.dev === "true") {
-    //if the trace folder doesn't exist, create it
-    if (!fs.existsSync("./trace")) {
-      fs.mkdirSync("./trace");
-    }
-
-    //delete old trace folder /trace
-    fs.rmdirSync("./trace", { recursive: true });
-    fs.mkdirSync("./trace");
-    console.log("Deleted old trace data");
-  }
+  mainProcessReporter("Starting up");
 
   if (!fs.existsSync("./trace")) {
     fs.mkdirSync("./trace");
   }
 
-  //download all current journey traces
+  if (!fs.existsSync("./trace/today")) {
+    fs.mkdirSync("./trace/today");
+  }
 
-  await downloadNewFilesFromSFTPHost(hostConfig, "./trace", "/xb/lg/trace/current");
+  //download all current journey traces
+  mainProcessReporter("'Startup' - Downloading existing journey traces");
+
+  await downloadNewFilesFromSFTPHost(hostConfig, "./trace/today", "/xb/lg/trace/current");
 
   console.log("Downloaded current journey traces");
+  mainProcessReporter("'Startup' - Downloaded existing journey traces, waiting for new requests");
 
   //const filesOn = await getFilesInDirectory(hostConfig, "/xb/lg/trace/current");
   //console.log(filesOn);
@@ -88,13 +86,52 @@ cron.schedule("*/5 * * * * *", async () => {
 
 //midnight
 cron.schedule("0 0 * * *", async () => {
-  console.log("Deleting old data");
-
   cronMidnightIsRunning = true;
 
+  console.log("Deleting/ moving old data");
+
+  //delete old trace folder /7dayago
+  if (fs.existsSync("./trace/7dayago")) {
+    fs.rmdirSync("./trace/7dayago", { recursive: true });
+  }
+
+  //move 6dayago to 7dayago
+  if (fs.existsSync("./trace/6dayago")) {
+    fs.renameSync("./trace/6dayago", "./trace/7dayago");
+  }
+
+  //move 5dayago to 6dayago
+  if (fs.existsSync("./trace/5dayago")) {
+    fs.renameSync("./trace/5dayago", "./trace/6dayago");
+  }
+
+  //move 4dayago to 5dayago
+  if (fs.existsSync("./trace/4dayago")) {
+    fs.renameSync("./trace/4dayago", "./trace/5dayago");
+  }
+
+  //move 3dayago to 4dayago
+  if (fs.existsSync("./trace/3dayago")) {
+    fs.renameSync("./trace/3dayago", "./trace/4dayago");
+  }
+
+  //move 2dayago to 3dayago
+  if (fs.existsSync("./trace/2dayago")) {
+    fs.renameSync("./trace/2dayago", "./trace/3dayago");
+  }
+
+  //move 1dayago to 2dayago
+  if (fs.existsSync("./trace/1dayago")) {
+    fs.renameSync("./trace/1dayago", "./trace/2dayago");
+  }
+
+  //move today /trace/today to /trace/1dayago
+  if (fs.existsSync("./trace/today")) {
+    fs.renameSync("./trace/today", "./trace/1dayago");
+  }
+
   //delete old trace folder /trace
-  fs.rmdirSync("./trace", { recursive: true });
-  fs.mkdirSync("./trace");
+  fs.mkdirSync("./trace/today", { recursive: true });
 
   console.log("Deleted old trace data");
 
@@ -118,9 +155,10 @@ async function cron1MinuteFunction() {
   cron1MinuteIsRunning = true;
 
   console.log("Downloading current journey traces");
+  mainProcessReporter("Downloading latest journey traces");
 
   //connect to the sorter pc and get the current journey traces
-  await downloadNewFilesFromSFTPHost(hostConfig, "./trace", "/xb/lg/trace/current");
+  await downloadNewFilesFromSFTPHost(hostConfig, "./trace/today", "/xb/lg/trace/current");
 
   console.log("Downloaded current journey traces");
 
@@ -132,7 +170,7 @@ async function cron5SecondFunction() {
   const used = process.memoryUsage();
   for (let key in used) {
     const memoryKey = key as keyof NodeJS.MemoryUsage;
-    console.log(`${memoryKey} ${Math.round((used[memoryKey] / 1024 / 1024) * 100) / 100} MB`);
+    //   console.log(`${memoryKey} ${Math.round((used[memoryKey] / 1024 / 1024) * 100) / 100} MB`);
   }
 
   //if in startup, don't do anything
@@ -154,9 +192,12 @@ async function cron5SecondFunction() {
   if (SorterJourneyRequests === null) {
     cron5SecondIsRunning = false;
     console.log("No journey trace requests");
+    mainProcessReporter("No journey trace requests");
 
     return;
   }
+
+  mainProcessReporter("Processing journey trace request");
 
   //we have a request  , lets process it
   const sorterJourneyRequest = await db.sorterJourneyRequests.update({
@@ -174,14 +215,50 @@ async function cron5SecondFunction() {
   console.log("Processing journey trace request");
 
   //download the trace.lg file
-  const traceFileResult = await downloadFileFromSFTPHost(hostConfig, "./trace/trace.lg", "/xb/lg/trace/current/trace.lg");
+  const traceFileResult = await downloadFileFromSFTPHost(hostConfig, "./trace/today/trace.lg", "/xb/lg/trace/current/trace.lg");
 
   console.log(traceFileResult);
 
   console.log("Downloaded trace file");
 
   //run analysis on the trace file
-  await runAnalysisOnRequestedUL(sorterJourneyRequest.requestedUL, sorterJourneyRequest.id);
+  await runAnalysisOnRequestedUL(sorterJourneyRequest.requestedUL, sorterJourneyRequest.id, "./trace/today");
 
   cron5SecondIsRunning = false;
+}
+
+export async function mainProcessReporter(status: string) {
+  //check if we already have a id of 1 - this is for the user to know that the service is running and what it is doing
+  const sorterJourneyRequest = await db.sorterJourneyRequests.findFirst({
+    where: {
+      requestedUL: "master",
+    },
+  });
+
+  //if we don't have a id of 1, create it and update the status
+  if (sorterJourneyRequest === null) {
+    await db.sorterJourneyRequests.create({
+      data: {
+        requestedUL: "master",
+        status: status,
+        journey: "",
+        currentStatusStep: "",
+        processingStartedDate: new Date(),
+      },
+    });
+    return;
+  }
+
+  //if we do have a id of 1, update the status
+  await db.sorterJourneyRequests.updateMany({
+    where: {
+      requestedUL: "master",
+    },
+    data: {
+      status: status,
+      journey: "",
+      currentStatusStep: "Downloading latest trace file",
+      processingStartedDate: new Date(),
+    },
+  });
 }

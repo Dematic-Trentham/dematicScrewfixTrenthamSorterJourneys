@@ -7,8 +7,8 @@
   "scripts": {
     "clean": "rimraf dist",
     "start": "node index.js",
-    "startDev": "node --max_old_space_size=3072 build/index.js",
-    "startDevWatch": "nodemon build/index.js",
+    "startDev": "node --max_old_space_size=4072 build/index.js",
+    "startDevWatch": "nodemon --max_old_space_size=3072 build/index.js",
     "startDev2Watch": "nodemon src/index.ts",
     "startDevDockInspect": "nodemon build/index.js --inspect-brk=0.0.0.0",
     "buildOnce": "tsc",

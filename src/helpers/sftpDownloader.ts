@@ -5,6 +5,7 @@
 
 import ssh2SftpClient from "ssh2-sftp-client";
 import fs from "fs";
+import { mainProcessReporter } from "./../index.js";
 
 export type sftpClientSettings = {
   host: string;
@@ -69,6 +70,8 @@ export async function downloadNewFilesFromSFTPHost(clientSettings: sftpClientSet
   //get the list of files in the directory
   const files = await getFilesInDirectory(clientSettings, pathToDownload);
 
+  const amountOfFiles = files.length;
+
   //download each file
   for (const file of files) {
     //check if the file already exists
@@ -76,6 +79,8 @@ export async function downloadNewFilesFromSFTPHost(clientSettings: sftpClientSet
       await downloadFileFromSFTPHost(clientSettings, `${localDownloadPath}/${file.name}`, `${pathToDownload}/${file.name}`);
 
       console.log(`Downloaded ${file.name}`);
+
+      mainProcessReporter("'Startup' - Downloading existing trace files currently downloading " + files.indexOf(file) + " of " + amountOfFiles);
     }
   }
 }
