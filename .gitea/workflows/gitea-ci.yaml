@@ -28,6 +28,8 @@ jobs:
         run: |
           docker tag screwfix-trentham-sorterjourneys:latest jwlyons/screwfix-trentham-sorterjourneys:latest
           docker push jwlyons/screwfix-trentham-sorterjourneys
+      - name: Reload container on server
+        run: |
           curl -H "Authorization: Bearer tokentokentokenlikeme" 192.168.1.100:8081/v1/update
   publish-test:
     runs-on: ubuntu-latest
@@ -41,4 +43,6 @@ jobs:
         run: |
           docker tag screwfix-trentham-sorterjourneys:latest jwlyons/screwfix-trentham-sorterjourneys:testing
           docker push jwlyons/screwfix-trentham-sorterjourneys:testing
+      - name: Reload container on server
+        run: |
           curl -H "Authorization: Bearer tokentokentokenlikeme" 192.168.1.100:8081/v1/update
