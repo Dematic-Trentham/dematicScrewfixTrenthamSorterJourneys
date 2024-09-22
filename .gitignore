@@ -20,7 +20,6 @@ build/
 .env.production
 
 # IDEs and editors
-.vscode/
 *.suo
 *.ntvs*
 *.njsproj
