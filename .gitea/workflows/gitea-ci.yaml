@@ -11,8 +11,7 @@ jobs:
         uses: https://github.com/actions/setup-node@v3
         with:
           node-version: "18.17"
-      - run: npm install --force
-      - run: npm run build-docker
+      - run: docker build -t screwfix-trentham-sorterjourneys . --no-cache --progress=plain
         env:
           NODE_OPTIONS: --max_old_space_size=4096
           RUNNER_TOOL_CACHE: /toolcache
