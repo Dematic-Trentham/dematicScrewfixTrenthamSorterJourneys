@@ -3,7 +3,7 @@
   "npm.packageManager": "pnpm",
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
-    "source.organizeImports": true
+    "source.organizeImports": "explicit"
   },
   "eslint.validate": ["javascript"],
   "editor.formatOnSave": true

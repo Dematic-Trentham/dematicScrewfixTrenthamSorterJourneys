@@ -59,7 +59,7 @@ export async function removeAFile(filePath: string): Promise<void> {
   }
 }
 
-export async function mergeTraceFilesIntoArray(localPath: string, requestID: string): Promise<string[]> {
+export async function mergeTraceFilesIntoArray(localPath: string, requestID?: string): Promise<string[]> {
   log("Merging trace files " + localPath);
 
   //does the folder exist
@@ -83,8 +83,9 @@ export async function mergeTraceFilesIntoArray(localPath: string, requestID: str
 
   //loop through the files
   for (const file of fileList) {
-    await updateStatusStep(requestID, `Merging Trace Files Into Array Reading file: ${file} - in folder: ${localPath}`);
-
+    if (requestID) {
+      await updateStatusStep(requestID, `Merging Trace Files Into Array Reading file: ${file} - in folder: ${localPath}`);
+    }
     //create a read stream for the file
     const fileStream = fsNormal.createReadStream(`${localPath}/${file}`, { encoding: "utf-8" });
 

@@ -1,15 +1,15 @@
 //Service for Dematic Dashboard Screwfix
 //Created by: JWL
 //Date: 2023/02/02 02:51:41
-//Last modified: 2024/09/22 14:07:35
+//Last modified: 2024/09/23 16:03:51
 //Version: 1.0.9
 
 //imports
 import "dotenv/config";
 
-import cron from "node-cron";
 import fs from "fs";
-import { downloadNewFilesFromSFTPHost, sftpClientSettings, getFilesInDirectory, downloadFileFromSFTPHost } from "./helpers/sftpDownloader.js";
+import cron from "node-cron";
+import { downloadFileFromSFTPHost, downloadNewFilesFromSFTPHost, sftpClientSettings } from "./helpers/sftpDownloader.js";
 
 import db from "./db/db.js";
 
@@ -27,22 +27,17 @@ const hostConfig: sftpClientSettings = {
 };
 
 //import process tracker and start the process
-import ProcessTracker from "./processTracker.js";
-import { request } from "https";
-import { mergeTraceFilesIntoArray } from "./helpers/fileSystem.js";
-ProcessTracker.startProcess("sorterJourneyTrace");
-
-//reboot every day at 00:05
-cron.schedule("5 0 * * *", () => {
-  console.log("Rebooting service...");
-  process.exit(0);
-});
+import { lastDayAnalysis } from "./lastDayAnalysis.js";
+//ProcessTracker.startProcess("sorterJourneyTrace");
 
 let inStartUp = true;
 //delete old data every day at start of day
 startUp();
 
 async function startUp() {
+  //pretend to last day analysis
+  await lastDayAnalysis();
+
   mainProcessReporter("Starting up");
 
   if (!fs.existsSync("./trace")) {
@@ -133,7 +128,10 @@ cron.schedule("0 0 * * *", async () => {
   //delete old trace folder /trace
   fs.mkdirSync("./trace/today", { recursive: true });
 
-  console.log("Deleted old trace data");
+  console.log("Deleted old trace data/ moved to new folders");
+
+  //run analysis for all the files in the 1dayago folder
+  await lastDayAnalysis();
 
   cronMidnightIsRunning = false;
 });
