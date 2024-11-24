@@ -84,6 +84,29 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
     await updateStatusStep(requestID, "Checking previous day " + previousDay);
     console.log(`Checking previous day ${previousDay}`);
 
+    //does the folder exist
+    try {
+      await fs.stat(path.join(process.cwd(), previousDay));
+    } catch (e) {
+      console.log(`Folder ${previousDay} does not exist`);
+
+      await updateStatusStep(requestID, `Folder ${previousDay} does not exist`);
+
+      await db.sorterJourneyRequests.update({
+        where: {
+          id: requestID,
+        },
+        data: {
+          status: "COMPLETED",
+          journey: "[]",
+          processingCompletedDate: new Date(),
+          currentStatusStep: "Completed",
+        },
+      });
+
+      return;
+    }
+
     await runAnalysisOnRequestedUL(requestedUL, requestID, "./trace/" + previousDay);
 
     return;
