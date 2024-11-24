@@ -30,7 +30,7 @@ const hostConfig: sftpClientSettings = {
 //import ProcessTracker from "./processTracker.js";
 import { request } from "https";
 import { mergeTraceFilesIntoArray } from "./helpers/fileSystem.js";
-import { exec } from "child_process";
+import { exec, ExecException } from "child_process";
 //ProcessTracker.startProcess("sorterJourneyTrace");
 
 //reboot every day at 00:15
@@ -38,7 +38,7 @@ cron.schedule("15 0 * * *", () => {
   console.log("Rebooting service...");
 
   //reboot the service
-  exec("docker restart dematicScrewfixTrenthamSorterJourneys", (error: { message: any; }, stdout: any, stderr: any) => {
+  exec("docker restart dematicScrewfixTrenthamSorterJourneys", (error: ExecException | null, stdout: string, stderr: string) => {
     if (error) {
       console.error(`Error restarting container: ${error.message}`);
       return;
