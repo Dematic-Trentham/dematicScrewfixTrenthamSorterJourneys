@@ -53,8 +53,8 @@ jobs:
 
       - name: Push Image
         run: |
-          docker tag dematicscrewfixtrenthamsorterjourneys:latest jwlyons/dematicscrewfixtrenthamsorterjourneys:${{ steps.metadata.outputs.version }}
           docker push jwlyons/dematicscrewfixtrenthamsorterjourneys:latest
+          docker tag dematicscrewfixtrenthamsorterjourneys:latest jwlyons/dematicscrewfixtrenthamsorterjourneys:${{ steps.metadata.outputs.version }}
           docker push jwlyons/dematicscrewfixtrenthamsorterjourneys:${{ steps.metadata.outputs.version }}
 
       - name: Remove Docker Images

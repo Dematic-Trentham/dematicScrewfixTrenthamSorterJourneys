@@ -1,7 +1,7 @@
 FROM node:18-alpine AS base
 
 # Stage 1: Builder
-FROM base as builder
+FROM base AS builder
 
 # Set the working directory
 WORKDIR /app
@@ -24,10 +24,10 @@ RUN npm run prisma-merge
 # Build the application
 RUN npm run buildOnce
 RUN npm run packageJsonStripper
-run ls -l
+RUN ls -l
 
 # Stage 2: Production image
-FROM base as production
+FROM base AS production
 
 # Set the working directory
 WORKDIR /app
