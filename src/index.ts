@@ -27,11 +27,11 @@ const hostConfig: sftpClientSettings = {
 };
 
 //import process tracker and start the process
-import ProcessTracker from "./processTracker.js";
+//import ProcessTracker from "./processTracker.js";
 import { request } from "https";
 import { mergeTraceFilesIntoArray } from "./helpers/fileSystem.js";
 const { exec } = require("child_process");
-ProcessTracker.startProcess("sorterJourneyTrace");
+//ProcessTracker.startProcess("sorterJourneyTrace");
 
 //reboot every day at 00:15
 cron.schedule("15 0 * * *", () => {
