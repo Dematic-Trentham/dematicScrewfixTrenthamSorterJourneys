@@ -53,6 +53,7 @@ jobs:
 
       - name: Push Image
         run: |
+          docker tag dematicscrewfixtrenthamsorterjourneys:latest jwlyons/dematicscrewfixtrenthamsorterjourneys:latest
           docker push jwlyons/dematicscrewfixtrenthamsorterjourneys:latest
           docker tag dematicscrewfixtrenthamsorterjourneys:latest jwlyons/dematicscrewfixtrenthamsorterjourneys:${{ steps.metadata.outputs.version }}
           docker push jwlyons/dematicscrewfixtrenthamsorterjourneys:${{ steps.metadata.outputs.version }}
@@ -60,4 +61,5 @@ jobs:
       - name: Remove Docker Images
         run: |
           docker rmi dematicscrewfixtrenthamsorterjourneys:latest
+          docker rmi jwlyons/dematicscrewfixtrenthamsorterjourneys:latest
           docker rmi jwlyons/dematicscrewfixtrenthamsorterjourneys:${{ steps.metadata.outputs.version }}
