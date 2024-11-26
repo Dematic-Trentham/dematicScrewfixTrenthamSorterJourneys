@@ -181,6 +181,26 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
       break;
     }
   }
+
+  let routingBeforeLoad =[]
+
+  //find all pervious routing info
+  for (let x = lineNumber; x > 0; x--) {
+    const currentLine = totalTraceArray[x];
+
+    if (currentLine.includes(`code=<${UL}>`) || currentLine.includes(`${UL}`)) {
+     
+      routingBeforeLoad.push(currentLine);
+    }
+
+    if (currentLine.includes("RXED M_DSROUTING") && currentLine.includes(`code=<${UL}>`)) {
+  
+      break;
+    }
+  }
+
+
+
   // console.log("test:" + areaSensorLine);
 
   let journeyLines = [];
@@ -208,6 +228,11 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
 
   //reverse lines
   journeyLines.reverse();
+
+
+  //add routing before load to the front of the journey
+  journeyLines = routingBeforeLoad.concat(journeyLines);
+
   return { UL, offloadTime, cellNumber, inductNumber, chuteNumber, weight, rejectReason, areaSensorLine, journeyLines };
 
   // console.log(journeyLines);
