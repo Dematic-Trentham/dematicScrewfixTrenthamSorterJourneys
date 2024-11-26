@@ -198,10 +198,7 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
       break;
     }
   }
-
-
-
-  // console.log("test:" + areaSensorLine);
+console.log(routingBeforeLoad);
 
   let journeyLines = [];
 
