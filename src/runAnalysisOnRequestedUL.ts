@@ -228,7 +228,7 @@ console.log(routingBeforeLoad);
 
 
   //add routing before load to the front of the journey
-  journeyLines = routingBeforeLoad.concat(journeyLines);
+  journeyLines = journeyLines.concat(routingBeforeLoad);
 
   return { UL, offloadTime, cellNumber, inductNumber, chuteNumber, weight, rejectReason, areaSensorLine, journeyLines };
 
