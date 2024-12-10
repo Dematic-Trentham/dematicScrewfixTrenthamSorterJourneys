@@ -253,7 +253,23 @@ console.log(routingBeforeLoad);
     return timeA.localeCompare(timeB);
   });
 
-  
+  //what ever the last time is,  serach forward for 15 seconds for any emegency stops
+  let lastTime = journeyLines[journeyLines.length - 1].split("(")[1].split(")")[0];
+
+
+  for (let x = lineNumber; x < totalTraceArray.length; x++) {
+    const currentLine = totalTraceArray[x];
+
+    if (currentLine.includes("EMERGENCY") ) {
+      const time = currentLine.split("(")[1].split(")")[0];
+
+      if (time > lastTime && time < lastTime + 30) {
+        journeyLines.push(currentLine);
+      }
+    }
+  }
+
+
 
   return { UL, offloadTime, cellNumber, inductNumber, chuteNumber, weight, rejectReason, areaSensorLine, journeyLines };
 
