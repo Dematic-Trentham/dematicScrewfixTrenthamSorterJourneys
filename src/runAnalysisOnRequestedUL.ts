@@ -17,14 +17,18 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
   //lets read in all the files in the trace directory
   const totalTraceArray = await mergeTraceFilesIntoArray(requestedDay, requestID);
 
-  const dateString = totalTraceArray[1].split("New day: ")[1];
+  let  dateString = "" 
+  
+  if (totalTraceArray[1].includes("New day: ")) {
+    dateString = totalTraceArray[1].split("New day: ")[1];
+  } else if (totalTraceArray[1].includes("Current day: ")) {
 
   console.log(`Date: ${dateString}`);
   console.log(totalTraceArray[1])
   console.log(totalTraceArray[2])
   console.log(totalTraceArray[3])
   console.log(totalTraceArray[4])
-  
+
   //change mm/dd/yyyy to yyyy-mmm-dd
   const dateArray = dateString.split("/");
   const newDateString = dateArray[2] + "-" + dateArray[0] + "-" + dateArray[1];
