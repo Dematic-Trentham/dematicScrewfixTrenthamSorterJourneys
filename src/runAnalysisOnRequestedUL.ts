@@ -19,6 +19,12 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
 
   const dateString = totalTraceArray[1].split("New day: ")[1];
 
+  console.log(`Date: ${dateString}`);
+  console.log(totalTraceArray[1])
+  console.log(totalTraceArray[2])
+  console.log(totalTraceArray[3])
+  console.log(totalTraceArray[4])
+  
   //change mm/dd/yyyy to yyyy-mmm-dd
   const dateArray = dateString.split("/");
   const newDateString = dateArray[2] + "-" + dateArray[0] + "-" + dateArray[1];
