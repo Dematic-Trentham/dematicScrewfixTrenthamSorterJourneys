@@ -245,6 +245,16 @@ console.log(routingBeforeLoad);
   //add routing before load to the front of the journey
   journeyLines = journeyLines.concat(routingBeforeLoad);
 
+  //let sort the journey lines by time "(hh:mm:ss.sss)"
+  journeyLines.sort((a, b) => {
+    const timeA = a.split("(")[1].split(")")[0];
+    const timeB = b.split("(")[1].split(")")[0];
+
+    return timeA.localeCompare(timeB);
+  });
+
+  
+
   return { UL, offloadTime, cellNumber, inductNumber, chuteNumber, weight, rejectReason, areaSensorLine, journeyLines };
 
   // console.log(journeyLines);
