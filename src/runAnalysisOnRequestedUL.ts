@@ -259,6 +259,7 @@ console.log(routingBeforeLoad);
 
   for (let x = lineNumber; x < totalTraceArray.length; x++) {
     const currentLine = totalTraceArray[x];
+    console.log(currentLine);
 
     if (currentLine.includes("EMERGENCY") ) {
       const time = currentLine.split("(")[1].split(")")[0];
