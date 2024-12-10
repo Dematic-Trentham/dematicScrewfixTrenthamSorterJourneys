@@ -22,6 +22,12 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
   if (totalTraceArray[1].includes("New day: ")) {
     dateString = totalTraceArray[1].split("New day: ")[1];
   } else if (totalTraceArray[1].includes("Current day: ")) {
+    dateString = totalTraceArray[1].split("Current day: ")[1];
+  } else {
+    console.log("Date not found in trace files");
+    await updateStatusStep(requestID, "Date not found in trace files");
+    return
+  }
 
   console.log(`Date: ${dateString}`);
   console.log(totalTraceArray[1])
