@@ -29,11 +29,6 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
     return
   }
 
-  console.log(`Date: ${dateString}`);
-  console.log(totalTraceArray[1])
-  console.log(totalTraceArray[2])
-  console.log(totalTraceArray[3])
-  console.log(totalTraceArray[4])
 
   //change mm/dd/yyyy to yyyy-mmm-dd
   const dateArray = dateString.split("/");
@@ -206,7 +201,7 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
 
     if (currentLine.includes(`code=<${UL}>`) || currentLine.includes(`${UL}`)) {
      
-      routingBeforeLoad.push(currentLine);
+      routingBeforeLoad.push(currentLine +  " ----" );
     }
 
     if (currentLine.includes("RXED M_DSROUTING") && currentLine.includes(`code=<${UL}>`)) {
@@ -214,6 +209,10 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
       break;
     }
   }
+
+  //reverse lines
+  routingBeforeLoad.reverse();
+
 console.log(routingBeforeLoad);
 
   let journeyLines = [];
