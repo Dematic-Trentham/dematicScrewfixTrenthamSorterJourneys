@@ -15,6 +15,9 @@ COPY package.json ./
 RUN npm install --legacy-peer-deps
 RUN npm install -g typescript
 
+# Install OpenSSL
+RUN apk add --no-cache openssl
+
 
 # Copy the rest of the application
 COPY . .
@@ -28,6 +31,10 @@ RUN ls -l
 
 # Stage 2: Production image
 FROM base AS production
+
+# Install OpenSSL
+RUN apk add --no-cache openssl
+
 
 # Set the working directory
 WORKDIR /app
