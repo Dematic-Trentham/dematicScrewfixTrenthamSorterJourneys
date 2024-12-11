@@ -257,7 +257,17 @@ console.log(routingBeforeLoad);
   let lastTime = journeyLines[journeyLines.length - 1].split("(")[1].split(")")[0];
   console.log(`Last time: ${lastTime}`);
 
-  let timeToCheckto = lastTime + 15;
+  let lastTimeParts = lastTime.split(":").map(Number);
+  lastTimeParts[2] += 15; // Add 15 seconds
+  if (lastTimeParts[2] >= 60) {
+    lastTimeParts[1] += Math.floor(lastTimeParts[2] / 60);
+    lastTimeParts[2] %= 60;
+  }
+  if (lastTimeParts[1] >= 60) {
+    lastTimeParts[0] += Math.floor(lastTimeParts[1] / 60);
+    lastTimeParts[1] %= 60;
+  }
+  let timeToCheckto = lastTimeParts.map(part => String(part).padStart(2, '0')).join(":");
 
   console.log(`Time to check to: ${timeToCheckto}`);
 
@@ -268,7 +278,7 @@ console.log(routingBeforeLoad);
     const time = currentLine.split("(")[1].split(")")[0];
  
     //if the time is greater than 15 seconds from the last time,  break
-    if (time > lastTime + 15) {
+    if (time > timeToCheckto) {
       break;
     }
 
