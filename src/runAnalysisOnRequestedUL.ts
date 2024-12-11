@@ -255,18 +255,24 @@ console.log(routingBeforeLoad);
 
   //what ever the last time is,  serach forward for 15 seconds for any emegency stops
   let lastTime = journeyLines[journeyLines.length - 1].split("(")[1].split(")")[0];
-
+  console.log(`Last time: ${lastTime}`);
 
   for (let x = lineNumber; x < totalTraceArray.length; x++) {
     const currentLine = totalTraceArray[x];
     console.log(currentLine);
 
-    if (currentLine.includes("EMERGENCY") ) {
-      const time = currentLine.split("(")[1].split(")")[0];
+    const time = currentLine.split("(")[1].split(")")[0];
+ 
+    //if the time is greater than 15 seconds from the last time,  break
+    if (time > lastTime + 15) {
+      break;
+    }
 
-      if (time > lastTime && time < lastTime + 30) {
-        journeyLines.push(currentLine);
-      }
+    if (currentLine.includes("EMERGENCY") ) {
+      journeyLines.push(currentLine);
+
+      
+      
     }
   }
 
