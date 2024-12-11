@@ -257,6 +257,10 @@ console.log(routingBeforeLoad);
   let lastTime = journeyLines[journeyLines.length - 1].split("(")[1].split(")")[0];
   console.log(`Last time: ${lastTime}`);
 
+  let timeToCheckto = lastTime + 15;
+
+  console.log(`Time to check to: ${timeToCheckto}`);
+
   for (let x = lineNumber; x < totalTraceArray.length; x++) {
     const currentLine = totalTraceArray[x];
     console.log(currentLine);
