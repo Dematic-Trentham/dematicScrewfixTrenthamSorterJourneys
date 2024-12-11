@@ -229,7 +229,7 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
       currentLine.includes(`EMERGENCY`)
     ) {
       journeyLines.push(currentLine);
-      //console.log(currentLine);
+      console.log(currentLine);
 
       if (currentLine.includes("LOADMGM") && currentLine.includes(`cell=${cellNumber}`)) {
         break;
