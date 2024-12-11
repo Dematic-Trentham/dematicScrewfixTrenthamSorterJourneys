@@ -17,8 +17,8 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
   //lets read in all the files in the trace directory
   const totalTraceArray = await mergeTraceFilesIntoArray(requestedDay, requestID);
 
-  let  dateString = "" 
-  
+  let dateString = "";
+
   if (totalTraceArray[1].includes("New day: ")) {
     dateString = totalTraceArray[1].split("New day: ")[1];
   } else if (totalTraceArray[1].includes("Current day: ")) {
@@ -26,9 +26,8 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
   } else {
     console.log("Date not found in trace files");
     await updateStatusStep(requestID, "Date not found in trace files");
-    return
+    return;
   }
-
 
   //change mm/dd/yyyy to yyyy-mmm-dd
   const dateArray = dateString.split("/");
@@ -97,7 +96,7 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
 
     //does the folder exist
     try {
-      await fs.stat(path.join(process.cwd(),"/trace/", previousDay));
+      await fs.stat(path.join(process.cwd(), "/trace/", previousDay));
     } catch (e) {
       console.log(`Folder ${previousDay} does not exist`);
 
@@ -193,19 +192,17 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
     }
   }
 
-  let routingBeforeLoad =[]
+  let routingBeforeLoad = [];
 
   //find all pervious routing info
   for (let x = lineNumber; x > 0; x--) {
     const currentLine = totalTraceArray[x];
 
     if (currentLine.includes(`code=<${UL}>`) || currentLine.includes(`${UL}`)) {
-     
-      routingBeforeLoad.push(currentLine +  " ----" );
+      routingBeforeLoad.push(currentLine + " ----");
     }
 
     if (currentLine.includes("RXED M_DSROUTING") && currentLine.includes(`code=<${UL}>`)) {
-  
       break;
     }
   }
@@ -213,7 +210,7 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
   //reverse lines
   routingBeforeLoad.reverse();
 
-console.log(routingBeforeLoad);
+  console.log(routingBeforeLoad);
 
   let journeyLines = [];
 
@@ -241,7 +238,6 @@ console.log(routingBeforeLoad);
   //reverse lines
   journeyLines.reverse();
 
-
   //add routing before load to the front of the journey
   journeyLines = journeyLines.concat(routingBeforeLoad);
 
@@ -261,30 +257,29 @@ console.log(routingBeforeLoad);
   const time = new Date("2021-01-01 " + lastTime);
   console.log(`Time: ${time}`);
 
-const timeToCheckto = new Date(time.getTime() + 15000).toLocaleTimeString("en-GB", { hour12: false });
+  const timeToCheckto = new Date(time.getTime() + 15000).toLocaleTimeString("en-GB", { hour12: false });
 
   console.log(`Time to check to: ${timeToCheckto}`);
 
   for (let x = lineNumber; x < totalTraceArray.length; x++) {
-    const currentLine = totalTraceArray[x];
-    console.log(currentLine);
+    try {
+      const currentLine = totalTraceArray[x];
+      console.log(currentLine);
 
-    const time = currentLine.split("(")[1].split(")")[0];
- 
-    //if the time is greater than 15 seconds from the last time,  break
-    if (time > timeToCheckto) {
-      break;
-    }
+      const time = currentLine.split("(")[1].split(")")[0];
 
-    if (currentLine.includes("EMERGENCY") ) {
-      journeyLines.push(currentLine);
+      //if the time is greater than 15 seconds from the last time,  break
+      if (time > timeToCheckto) {
+        break;
+      }
 
-      
-      
+      if (currentLine.includes("EMERGENCY")) {
+        journeyLines.push(currentLine);
+      }
+    } catch (e) {
+      console.log(e);
     }
   }
-
-
 
   return { UL, offloadTime, cellNumber, inductNumber, chuteNumber, weight, rejectReason, areaSensorLine, journeyLines };
 
