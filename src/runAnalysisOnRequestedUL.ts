@@ -229,7 +229,7 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
       currentLine.includes(`EMERGENCY`)
     ) {
       journeyLines.push(currentLine);
-      console.log(currentLine);
+      console.log("AAA"+currentLine);
 
       if (currentLine.includes("LOADMGM") && currentLine.includes(`cell=${cellNumber}`)) {
         break;
@@ -263,25 +263,25 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
 
   console.log(`Time to check to: ${timeToCheckto}`);
 
-  for (let x = lineNumber; x < totalTraceArray.length; x++) {
-    try {
-      const currentLine = totalTraceArray[x];
-      console.log(currentLine);
+  // for (let x = lineNumber; x < totalTraceArray.length; x++) {
+  //   try {
+  //     const currentLine = totalTraceArray[x];
+  //     //console.log(currentLine);
 
-      const time = currentLine.split("(")[1].split(")")[0];
+  //     const time = currentLine.split("(")[1].split(")")[0];
 
-      //if the time is greater than 15 seconds from the last time,  break
-      if (time > timeToCheckto) {
-        break;
-      }
+  //     //if the time is greater than 15 seconds from the last time,  break
+  //     if (time > timeToCheckto) {
+  //       break;
+  //     }
 
-      if (currentLine.includes("EMERGENCY")) {
-        journeyLines.push(currentLine);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  }
+  //     if (currentLine.includes("EMERGENCY")) {
+  //       journeyLines.push(currentLine);
+  //     }
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // }
 
   return { UL, offloadTime, cellNumber, inductNumber, chuteNumber, weight, rejectReason, areaSensorLine, journeyLines };
 
