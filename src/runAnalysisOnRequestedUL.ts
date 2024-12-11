@@ -97,7 +97,7 @@ export async function runAnalysisOnRequestedUL(requestedUL: string, requestID: s
 
     //does the folder exist
     try {
-      await fs.stat(path.join(process.cwd(), previousDay));
+      await fs.stat(path.join(process.cwd(),"/trace/", previousDay));
     } catch (e) {
       console.log(`Folder ${previousDay} does not exist`);
 
