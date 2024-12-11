@@ -257,17 +257,11 @@ console.log(routingBeforeLoad);
   let lastTime = journeyLines[journeyLines.length - 1].split("(")[1].split(")")[0];
   console.log(`Last time: ${lastTime}`);
 
-  let lastTimeParts = lastTime.split(":").map(Number);
-  lastTimeParts[2] += 15; // Add 15 seconds
-  if (lastTimeParts[2] >= 60) {
-    lastTimeParts[1] += Math.floor(lastTimeParts[2] / 60);
-    lastTimeParts[2] %= 60;
-  }
-  if (lastTimeParts[1] >= 60) {
-    lastTimeParts[0] += Math.floor(lastTimeParts[1] / 60);
-    lastTimeParts[1] %= 60;
-  }
-  let timeToCheckto = lastTimeParts.map(part => String(part).padStart(2, '0')).join(":");
+  //change into time
+  const time = new Date("2021-01-01 " + lastTime);
+  console.log(`Time: ${time}`);
+
+const timeToCheckto = new Date(time.getTime() + 15000).toLocaleTimeString("en-GB", { hour12: false });
 
   console.log(`Time to check to: ${timeToCheckto}`);
 
