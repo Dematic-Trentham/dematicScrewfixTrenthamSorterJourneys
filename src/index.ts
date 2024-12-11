@@ -202,11 +202,11 @@ async function cron5SecondFunction() {
     },
   });
 
-  console.log("SorterJourneyRequests ");
+  //console.log("SorterJourneyRequests ");
 
   if (SorterJourneyRequests === null) {
     cron5SecondIsRunning = false;
-    console.log("No journey trace requests");
+    //console.log("No journey trace requests");
     mainProcessReporter("No journey trace requests");
 
     return;
