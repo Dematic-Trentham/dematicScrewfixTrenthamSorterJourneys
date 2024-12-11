@@ -224,7 +224,9 @@ async function analysisTraceLine(totalTraceArray: string[], lineNumber: number, 
       currentLine.includes(`Cell ${cellNumber} `) ||
       currentLine.includes(`cell:${cellNumber} `) ||
       currentLine.includes(`Cell:${cellNumber} `) ||
-      currentLine.includes(`code=<${UL}>`)
+      currentLine.includes(`code=<${UL}>`) ||
+      currentLine.includes(`emegency`) ||
+      currentLine.includes(`EMERGENCY`)
     ) {
       journeyLines.push(currentLine);
       //console.log(currentLine);
