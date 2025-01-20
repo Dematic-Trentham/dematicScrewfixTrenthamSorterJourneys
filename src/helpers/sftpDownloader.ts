@@ -6,6 +6,7 @@
 import ssh2SftpClient from "ssh2-sftp-client";
 import fs from "fs";
 import { mainProcessReporter } from "./../index.js";
+import { checkForDisabledCells } from "../disabledCells.js";
 
 export type sftpClientSettings = {
   host: string;
@@ -77,6 +78,9 @@ export async function downloadNewFilesFromSFTPHost(clientSettings: sftpClientSet
     //check if the file already exists
     if (!fs.existsSync(`${localDownloadPath}/${file.name}`)) {
       await downloadFileFromSFTPHost(clientSettings, `${localDownloadPath}/${file.name}`, `${pathToDownload}/${file.name}`);
+
+      //check for disabled cells on the new file
+      await checkForDisabledCells(`${localDownloadPath}/${file.name}`);
 
       console.log(`Downloaded ${file.name}`);
 
