@@ -81,4 +81,34 @@ export async function checkForDisabledCells(path: string) {
       });
     }
   }
+
+  //cell 0 is always disabled but the sorter does not have a cell 0, this will the last update timestamp for this function
+  //do we need to add a cell 0 to the database?
+  const cell0 = await db.sorterDisabledCells.findFirst({
+    where: {
+      cellNumber: 0,
+    },
+  });
+
+  if (!cell0) {
+    await db.sorterDisabledCells.create({
+      data: {
+        cellNumber: 0,
+        disabled: true,
+        date: new Date(),
+        dateChanged: new Date(),
+      },
+    });
+  } else {
+    await db.sorterDisabledCells.update({
+      where: {
+        id: cell0.id,
+      },
+      data: {
+        dateChanged: new Date(),
+      },
+    });
+  }
+
+  console.log("Finished checking for disabled cells");
 }
