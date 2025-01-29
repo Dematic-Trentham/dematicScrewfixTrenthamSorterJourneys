@@ -66,15 +66,6 @@ export async function checkForDisabledCells(path: string) {
           dateChanged: new Date(),
         },
       });
-
-      await db.sorterDisabledCellsHistory.create({
-        data: {
-          cellNumber: sorterCellDB.cellNumber,
-          disabled: false,
-          date: new Date(),
-          dateChanged: new Date(),
-        },
-      });
     }
 
     //Cell is not disabled in the database but is in the list of disabled cells
@@ -85,15 +76,6 @@ export async function checkForDisabledCells(path: string) {
         },
         data: {
           disabled: true,
-          dateChanged: new Date(),
-        },
-      });
-
-      await db.sorterDisabledCellsHistory.create({
-        data: {
-          cellNumber: sorterCellDB.cellNumber,
-          disabled: true,
-          date: new Date(),
           dateChanged: new Date(),
         },
       });
