@@ -93,6 +93,8 @@ export async function checkForDisabledCells(path: string) {
 }
 
 async function updateCell(date: Date, cell: number, disabled: boolean) {
+  console.log(`Updating cell ${cell} to ${disabled} at ${date}`);
+
   const cellDB = await db.sorterDisabledCells.findFirst({
     where: {
       cellNumber: cell,
