@@ -10,29 +10,6 @@ export async function checkForDisabledCells(path: string) {
   //read the file line by line
   const lines = fileContents.split("\n");
 
-  //list of disabled cells
-  const disabledCells: string[] = [];
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line.includes("disabled cell")) {
-      console.log(line);
-
-      //get the cell number
-      const cellNumber = line.split("cell=")[1].split(" ")[0];
-
-      //add the cell to the list of disabled cells if it is not already there
-      if (!disabledCells.includes(cellNumber)) {
-        disabledCells.push(cellNumber);
-      }
-    }
-  }
-
-  //sort the list of disabled cells
-  disabledCells.sort();
-
-  console.log(disabledCells);
-
   //lets update the database with the list of disabled cells
   const sorterCellsDB = await db.sorterDisabledCells.findMany();
 
@@ -45,56 +22,6 @@ export async function checkForDisabledCells(path: string) {
           disabled: false,
           date: new Date(),
           dateChanged: new Date(),
-        },
-      });
-    }
-  }
-
-  //for each cell in the database, check if it is in the list of disabled cells and update the database accordingly
-  for (let i = 0; i < sorterCellsDB.length; i++) {
-    const sorterCellDB = sorterCellsDB[i];
-    const cellNumber = sorterCellDB.cellNumber.toString();
-
-    //Cell is disabled in the database but not in the list of disabled cells
-    if (sorterCellDB.disabled && !disabledCells.includes(cellNumber)) {
-      await db.sorterDisabledCells.update({
-        where: {
-          id: sorterCellDB.id,
-        },
-        data: {
-          disabled: false,
-          dateChanged: new Date(),
-        },
-      });
-
-      await db.sorterDisabledCellsHistory.create({
-        data: {
-          cellNumber: sorterCellDB.cellNumber,
-          disabled: true,
-          date: sorterCellDB.date,
-          dateChanged: sorterCellDB.dateChanged,
-        },
-      });
-    }
-
-    //Cell is not disabled in the database but is in the list of disabled cells
-    if (!sorterCellDB.disabled && disabledCells.includes(cellNumber)) {
-      await db.sorterDisabledCells.update({
-        where: {
-          id: sorterCellDB.id,
-        },
-        data: {
-          disabled: true,
-          dateChanged: new Date(),
-        },
-      });
-
-      await db.sorterDisabledCellsHistory.create({
-        data: {
-          cellNumber: sorterCellDB.cellNumber,
-          disabled: false,
-          date: sorterCellDB.date,
-          dateChanged: sorterCellDB.dateChanged,
         },
       });
     }
@@ -128,5 +55,79 @@ export async function checkForDisabledCells(path: string) {
     });
   }
 
+  //loop through the lines and update the database
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].split("\n");
+
+    //does the line contain "DEVICE = 2," and "DEVICE DISABLED" or "DEVICE ENABLED"?
+    if (line[0].includes("DEVICE = 2,")) {
+      //time is the first part of the line "(hh:mm:ss.mmm)"
+      const time = line[0].substring(1, 13);
+
+      //turn the time into a date with todays date
+      const date = new Date();
+      const timeSplit = time.split(":");
+      date.setHours(parseInt(timeSplit[0]));
+      date.setMinutes(parseInt(timeSplit[1]));
+      date.setSeconds(parseInt(timeSplit[2]));
+      date.setMilliseconds(parseInt(timeSplit[3]));
+
+      //get the cell number "ID_Device = xxx,"
+      const cell = parseInt(line[0].split("ID_Device = ")[1].split(",")[0]);
+
+      //is the cell disabled or enabled?
+      const disabled = line[0].includes("DEVICE DISABLED");
+      const enabled = line[0].includes("DEVICE ENABLED");
+
+      if (disabled) {
+        console.log(`Cell ${cell} is disabled`);
+        await updateCell(date, cell, true);
+      } else if (enabled) {
+        console.log(`Cell ${cell} is enabled`);
+        await updateCell(date, cell, false);
+      }
+    }
+  }
+
   console.log("Finished checking for disabled cells");
+}
+
+async function updateCell(date: Date, cell: number, disabled: boolean) {
+  const cellDB = await db.sorterDisabledCells.findFirst({
+    where: {
+      cellNumber: cell,
+    },
+  });
+
+  //if the cell is already in the database then update it
+  if (cellDB) {
+    await db.sorterDisabledCells.update({
+      where: {
+        id: cellDB.id,
+      },
+      data: {
+        disabled: disabled,
+        dateChanged: date,
+      },
+    });
+  } else {
+    await db.sorterDisabledCells.create({
+      data: {
+        cellNumber: cell,
+        disabled: disabled,
+        date: date,
+        dateChanged: date,
+      },
+    });
+  }
+
+  // make history of changes
+  await db.sorterDisabledCellsHistory.create({
+    data: {
+      cellNumber: cell,
+      disabled: disabled,
+      date: date,
+      dateChanged: date,
+    },
+  });
 }
