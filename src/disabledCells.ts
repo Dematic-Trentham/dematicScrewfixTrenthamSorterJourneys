@@ -79,6 +79,8 @@ export async function checkForDisabledCells(path: string) {
       const disabled = line[0].includes("DEVICE DISABLED");
       const enabled = line[0].includes("DEVICE ENABLED");
 
+      console.log(`Cell ${cell} is ${disabled ? "disabled" : "enabled"} at ${date}`);
+
       if (disabled) {
         console.log(`Cell ${cell} is disabled`);
         await updateCell(date, cell, true);
