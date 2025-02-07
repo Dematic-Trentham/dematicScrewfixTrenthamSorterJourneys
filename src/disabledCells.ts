@@ -62,6 +62,8 @@ export async function checkForDisabledCells(path: string) {
 
     //does the line contain "DEVICE = 2," and "DEVICE DISABLED" or "DEVICE ENABLED"?
     if (line.includes("DEVICE =  2, ")) {
+      console.log(`Checking line ${i + 1} of ${lines.length}`);
+      console.log(line);
       //time is the first part of the line "(hh:mm:ss.mmm)"
       const time = line.substring(1, 13);
 
