@@ -9,6 +9,7 @@ export async function checkForDisabledCells(path: string) {
 
   //read the file line by line
   const lines = fileContents.split("\n");
+  console.log(`Found ${lines.length} lines`);
 
   //lets update the database with the list of disabled cells
   const sorterCellsDB = await db.sorterDisabledCells.findMany();
@@ -57,7 +58,7 @@ export async function checkForDisabledCells(path: string) {
 
   //loop through the lines and update the database
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].split("\n");
+    const line = lines[i];
 
     //does the line contain "DEVICE = 2," and "DEVICE DISABLED" or "DEVICE ENABLED"?
     if (line[0].includes("DEVICE =  2, ")) {
