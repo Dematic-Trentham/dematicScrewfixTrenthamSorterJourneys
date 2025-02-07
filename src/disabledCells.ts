@@ -61,9 +61,9 @@ export async function checkForDisabledCells(path: string) {
     const line = lines[i];
 
     //does the line contain "DEVICE = 2," and "DEVICE DISABLED" or "DEVICE ENABLED"?
-    if (line[0].includes("DEVICE =  2, ")) {
+    if (line.includes("DEVICE =  2, ")) {
       //time is the first part of the line "(hh:mm:ss.mmm)"
-      const time = line[0].substring(1, 13);
+      const time = line.substring(1, 13);
 
       //turn the time into a date with todays date
       const date = new Date();
@@ -74,11 +74,11 @@ export async function checkForDisabledCells(path: string) {
       date.setMilliseconds(parseInt(timeSplit[3]));
 
       //get the cell number "ID_Device = xxx,"
-      const cell = parseInt(line[0].split("ID_Device = ")[1].split(",")[0]);
+      const cell = parseInt(line.split("ID_Device = ")[1].split(",")[0]);
 
       //is the cell disabled or enabled?
-      const disabled = line[0].includes("DEVICE DISABLED");
-      const enabled = line[0].includes("DEVICE ENABLED");
+      const disabled = line.includes("DEVICE DISABLED");
+      const enabled = line.includes("DEVICE ENABLED");
 
       console.log(`Cell ${cell} is ${disabled ? "disabled" : "enabled"} at ${date}`);
 
