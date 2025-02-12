@@ -72,8 +72,8 @@ export async function checkForDisabledCells(path: string) {
       const timeSplit = time.split(":");
       date.setHours(parseInt(timeSplit[0]));
       date.setMinutes(parseInt(timeSplit[1]));
-      date.setSeconds(parseInt(timeSplit[2]));
-      date.setMilliseconds(parseInt(timeSplit[3]));
+      date.setSeconds(parseInt(timeSplit[2].split(".")[0]));
+      date.setMilliseconds(parseInt(timeSplit[2].split(".")[1]));
 
       //get the cell number "ID_DEVICE = xxx,"
       const cell = parseInt(line.split("ID_DEVICE = ")[1].split(",")[0]);
