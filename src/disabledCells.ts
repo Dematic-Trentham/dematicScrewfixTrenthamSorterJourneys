@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import db from "./db/db.js";
+import { cellLog } from "./indexer/indexer.js";
 
 export async function checkForDisabledCells(path: string) {
   console.log(`Checking for disabled cells in ${path}`);
@@ -26,34 +27,6 @@ export async function checkForDisabledCells(path: string) {
         },
       });
     }
-  }
-
-  //cell 0 is always disabled but the sorter does not have a cell 0, this will the last update timestamp for this function
-  //do we need to add a cell 0 to the database?
-  const cell0 = await db.sorterDisabledCells.findFirst({
-    where: {
-      cellNumber: 0,
-    },
-  });
-
-  if (!cell0) {
-    await db.sorterDisabledCells.create({
-      data: {
-        cellNumber: 0,
-        disabled: true,
-        date: new Date(),
-        dateChanged: new Date(),
-      },
-    });
-  } else {
-    await db.sorterDisabledCells.update({
-      where: {
-        id: cell0.id,
-      },
-      data: {
-        dateChanged: new Date(),
-      },
-    });
   }
 
   //loop through the lines and update the database
@@ -92,11 +65,40 @@ export async function checkForDisabledCells(path: string) {
     }
   }
 
+  //cell 0 is always disabled but the sorter does not have a cell 0, this will the last update timestamp for this function
+  //do we need to add a cell 0 to the database?
+  const cell0 = await db.sorterDisabledCells.findFirst({
+    where: {
+      cellNumber: 0,
+    },
+  });
+
+  if (!cell0) {
+    await db.sorterDisabledCells.create({
+      data: {
+        cellNumber: 0,
+        disabled: true,
+        date: new Date(),
+        dateChanged: new Date(),
+      },
+    });
+  } else {
+    await db.sorterDisabledCells.update({
+      where: {
+        id: cell0.id,
+      },
+      data: {
+        dateChanged: new Date(),
+      },
+    });
+  }
   console.log("Finished checking for disabled cells");
 }
 
 async function updateCell(date: Date, cell: number, disabled: boolean) {
   console.log(`Updating cell ${cell} to ${disabled} at ${date}`);
+
+  cellLog[cell - 1].disabled = disabled;
 
   const cellDB = await db.sorterDisabledCells.findFirst({
     where: {
