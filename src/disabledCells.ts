@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import db from "./db/db.js";
-import { cellLog } from "./indexer/indexer.js";
+const cellLog: { disabled: boolean }[] = [];
 
 export async function checkForDisabledCells(path: string) {
   console.log(`Checking for disabled cells in ${path}`);
@@ -34,7 +34,7 @@ export async function checkForDisabledCells(path: string) {
     const line = lines[i];
 
     //does the line contain "DEVICE = 2," and "DEVICE DISABLED" or "DEVICE ENABLED"?
-    if (line.includes("DEVICE =  2, ")) {
+    if (line.includes("DEVICE =  2, ") && false) {
       console.log(`Checking line ${i + 1} of ${lines.length}`);
       console.log(line);
       //time is the first part of the line "(hh:mm:ss.mmm)"
@@ -60,6 +60,47 @@ export async function checkForDisabledCells(path: string) {
         await updateCell(date, cell, true);
       } else if (enabled) {
         //  console.log(`Cell ${cell} is enabled`);
+        await updateCell(date, cell, false);
+      }
+    }
+
+    //new test
+    if (line.includes("<bk_offlver>") && line.includes("disabled cell")) {
+      console.log(`Found disabled cell in line ${i + 1}: ${line}`);
+
+      const time = line.substring(1, 13);
+
+      //turn the time into a date with todays date
+      const date = new Date();
+      const timeSplit = time.split(":");
+      date.setHours(parseInt(timeSplit[0]));
+      date.setMinutes(parseInt(timeSplit[1]));
+      date.setSeconds(parseInt(timeSplit[2].split(".")[0]));
+      date.setMilliseconds(parseInt(timeSplit[2].split(".")[1]));
+
+      //get the cell number
+      const cell = parseInt(line.split("cell=")[1].split(" ")[0]);
+
+      if (cell) {
+        await updateCell(date, cell, true);
+      }
+    } else if (line.includes("<offlver_result_free>")) {
+      console.log(`Found free cell in line ${i + 1}: ${line}`);
+
+      const time = line.substring(1, 13);
+
+      //turn the time into a date with todays date
+      const date = new Date();
+      const timeSplit = time.split(":");
+      date.setHours(parseInt(timeSplit[0]));
+      date.setMinutes(parseInt(timeSplit[1]));
+      date.setSeconds(parseInt(timeSplit[2].split(".")[0]));
+      date.setMilliseconds(parseInt(timeSplit[2].split(".")[1]));
+
+      //get the cell number
+      const cell = parseInt(line.split("cell=")[1].split(" ")[0]);
+
+      if (cell) {
         await updateCell(date, cell, false);
       }
     }
