@@ -137,8 +137,6 @@ export async function checkForDisabledCells(path: string) {
 }
 
 async function updateCell(date: Date, cell: number, disabled: boolean) {
-  console.log(`Updating cell ${cell} to ${disabled} at ${date}`);
-
   if (cellLog[cell - 1] == undefined) {
     cellLog[cell - 1] = {
       disabled: disabled,
