@@ -139,10 +139,9 @@ export async function checkForDisabledCells(path: string) {
 async function updateCell(date: Date, cell: number, disabled: boolean) {
   console.log(`Updating cell ${cell} to ${disabled} at ${date}`);
 
-
-  if ( cellLog[cell - 1] == undefined){
+  if (cellLog[cell - 1] == undefined) {
     cellLog[cell - 1] = {
-      disabled: disabled
+      disabled: disabled,
     };
   }
 
@@ -154,18 +153,10 @@ async function updateCell(date: Date, cell: number, disabled: boolean) {
     },
   });
 
+  console.log(`Found cell ${cell} in database: ${cellDB ? "yes" : "no"}`);
+
   //if the cell is already in the database then update it
-  if (cellDB) {
-    await db.sorterDisabledCells.update({
-      where: {
-        id: cellDB.id,
-      },
-      data: {
-        disabled: disabled,
-        dateChanged: date,
-      },
-    });
-  } else {
+  if (cellDB == undefined) {
     await db.sorterDisabledCells.create({
       data: {
         cellNumber: cell,
@@ -176,13 +167,40 @@ async function updateCell(date: Date, cell: number, disabled: boolean) {
     });
   }
 
-  // make history of changes
-  await db.sorterDisabledCellsHistory.create({
-    data: {
-      cellNumber: cell,
-      disabled: disabled,
-      date: date,
-      dateChanged: date,
-    },
-  });
+  //has the disabled state changed?
+  if (cellDB && cellDB.disabled !== disabled) {
+    console.log(`Cell ${cell} disabled state changed from ${cellDB.disabled} to ${disabled}`);
+    await db.sorterDisabledCells.update({
+      where: {
+        id: cellDB.id,
+      },
+      data: {
+        disabled: disabled,
+        date: date,
+        dateChanged: date,
+      },
+    });
+
+    // make history of changes
+    await db.sorterDisabledCellsHistory.create({
+      data: {
+        cellNumber: cell,
+        disabled: disabled,
+        date: date,
+        dateChanged: date,
+      },
+    });
+  } else {
+    //only update the date (last checked)
+    if (cellDB) {
+      await db.sorterDisabledCells.update({
+        where: {
+          id: cellDB.id,
+        },
+        data: {
+          date: date,
+        },
+      });
+    }
+  }
 }
