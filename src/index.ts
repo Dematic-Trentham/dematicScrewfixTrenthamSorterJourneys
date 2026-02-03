@@ -15,8 +15,10 @@ import db from "./db/db.js";
 
 import { runAnalysisOnRequestedUL } from "./runAnalysisOnRequestedUL.js";
 
+const testingMode = false;
+
 //startup text
-console.log("Dematic Dashboard Micro Service -");
+console.log("Dematic Dashboard Micro Service - Screwfix Sorter Journeys");
 
 //get config settings from environment variables
 const hostConfig: sftpClientSettings = {
@@ -27,11 +29,8 @@ const hostConfig: sftpClientSettings = {
 };
 
 //import process tracker and start the process
-//import ProcessTracker from "./processTracker.js";
-import { request } from "https";
-import { mergeTraceFilesIntoArray } from "./helpers/fileSystem.js";
 import { exec, ExecException } from "child_process";
-//ProcessTracker.startProcess("sorterJourneyTrace");
+import { readFileLineByLine } from "./lineReader.js";
 
 //reboot every day at 00:15
 cron.schedule("15 0 * * *", () => {
@@ -49,8 +48,6 @@ cron.schedule("15 0 * * *", () => {
     }
     console.log(`stdout: ${stdout}`);
   });
-
-
 });
 
 let inStartUp = true;
@@ -59,6 +56,19 @@ startUp();
 
 async function startUp() {
   mainProcessReporter("Starting up");
+
+  //re read for testing
+  if (testingMode) {
+    console.log("In testing mode, re-reading all files in ./trace/today");
+    const localFiles = fs.readdirSync("./trace/today");
+    for (const file of localFiles) {
+      console.log(`Re-reading file: ${file}`);
+      await readFileLineByLine(`./trace/today/${file}`);
+    }
+    //await readFileLineByLine(`./trace/today/trace.000`);
+
+    process.exit(0);
+  }
 
   if (!fs.existsSync("./trace")) {
     fs.mkdirSync("./trace");
@@ -277,3 +287,25 @@ export async function mainProcessReporter(status: string) {
     },
   });
 }
+
+function printStartupBanner() {
+  const reset = "\x1b[0m";
+  const bright = "\x1b[1m";
+  const fgCyan = "\x1b[36m";
+  const fgYellow = "\x1b[33m";
+  const fgGreen = "\x1b[32m";
+  const fgMagenta = "\x1b[35m";
+
+  console.log(
+    `${bright}${fgCyan}
+==========================================
+${fgYellow} Dematic Dashboard Micro Service
+${fgGreen}   Screwfix Sorter Journeys
+${fgMagenta}   Version: 1.0.9
+${fgCyan}==========================================
+${reset}`,
+  );
+}
+
+// Call at startup
+printStartupBanner();

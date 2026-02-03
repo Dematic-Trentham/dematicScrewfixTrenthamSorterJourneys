@@ -6,7 +6,7 @@
 import ssh2SftpClient from "ssh2-sftp-client";
 import fs from "fs";
 import { mainProcessReporter } from "./../index.js";
-import { checkForDisabledCells } from "../disabledCells.js";
+import { readFileLineByLine } from "./../lineReader.js";
 
 export type sftpClientSettings = {
   host: string;
@@ -77,12 +77,13 @@ export async function downloadNewFilesFromSFTPHost(clientSettings: sftpClientSet
   for (const file of files) {
     //check if the file already exists
     if (!fs.existsSync(`${localDownloadPath}/${file.name}`)) {
+      console.log(`Downloading new file ${file.name}`);
       await downloadFileFromSFTPHost(clientSettings, `${localDownloadPath}/${file.name}`, `${pathToDownload}/${file.name}`);
 
-      //check for disabled cells on the new file
-      await checkForDisabledCells(`${localDownloadPath}/${file.name}`);
-
       console.log(`Downloaded ${file.name}`);
+
+      //check for disabled cells on the new file
+      await readFileLineByLine(`${localDownloadPath}/${file.name}`);
 
       mainProcessReporter("'Startup' - Downloading existing trace files currently downloading " + files.indexOf(file) + " of " + amountOfFiles);
     }

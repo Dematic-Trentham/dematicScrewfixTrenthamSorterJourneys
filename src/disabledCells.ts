@@ -1,17 +1,7 @@
-import * as fs from "fs";
 import db from "./db/db.js";
-const cellLog: { disabled: boolean }[] = [];
+const cellLog: { disabled: boolean; dateChanged: Date; hasChanged: boolean }[] = [];
 
-export async function checkForDisabledCells(path: string) {
-  console.log(`Checking for disabled cells in ${path}`);
-
-  //read the file
-  const fileContents = await fs.promises.readFile(path, "utf-8");
-
-  //read the file line by line
-  const lines = fileContents.split("\n");
-  console.log(`Found ${lines.length} lines`);
-
+export async function checkForDisabledCellsStart() {
   //lets update the database with the list of disabled cells
   const sorterCellsDB = await db.sorterDisabledCells.findMany();
 
@@ -26,86 +16,74 @@ export async function checkForDisabledCells(path: string) {
           dateChanged: new Date(),
         },
       });
+
+      cellLog[i - 1] = {
+        disabled: false,
+        dateChanged: new Date(),
+        hasChanged: false,
+      };
     }
   }
 
-  //loop through the lines and update the database
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  //select all the cells from the database and put them in the cellLog
+  for (const cell of sorterCellsDB) {
+    cellLog[cell.cellNumber - 1] = {
+      disabled: cell.disabled,
+      dateChanged: cell.dateChanged,
+      hasChanged: false,
+    };
+  }
+}
 
-    //does the line contain "DEVICE = 2," and "DEVICE DISABLED" or "DEVICE ENABLED"?
-    if (line.includes("DEVICE =  2, ") && false) {
-      console.log(`Checking line ${i + 1} of ${lines.length}`);
-      console.log(line);
-      //time is the first part of the line "(hh:mm:ss.mmm)"
-      const time = line.substring(1, 13);
-
-      //turn the time into a date with todays date
-      const date = new Date();
-      const timeSplit = time.split(":");
-      date.setHours(parseInt(timeSplit[0]));
-      date.setMinutes(parseInt(timeSplit[1]));
-      date.setSeconds(parseInt(timeSplit[2].split(".")[0]));
-      date.setMilliseconds(parseInt(timeSplit[2].split(".")[1]));
-
-      //get the cell number "ID_DEVICE = xxx,"
-      const cell = parseInt(line.split("ID_DEVICE = ")[1].split(",")[0]);
-
-      //is the cell disabled or enabled?
-      const disabled = line.includes("DEVICE DISABLED");
-      const enabled = line.includes("DEVICE ENABLED");
-
-      if (disabled) {
-        // console.log(`Cell ${cell} is disabled`);
-        await updateCell(date, cell, true);
-      } else if (enabled) {
-        //  console.log(`Cell ${cell} is enabled`);
-        await updateCell(date, cell, false);
-      }
-    }
-
-    //new test
-    if (line.includes("<bk_offlver>") && line.includes("disabled cell")) {
-      console.log(`Found disabled cell in line ${i + 1}: ${line}`);
-
-      const time = line.substring(1, 13);
-
-      //turn the time into a date with todays date
-      const date = new Date();
-      const timeSplit = time.split(":");
-      date.setHours(parseInt(timeSplit[0]));
-      date.setMinutes(parseInt(timeSplit[1]));
-      date.setSeconds(parseInt(timeSplit[2].split(".")[0]));
-      date.setMilliseconds(parseInt(timeSplit[2].split(".")[1]));
-
-      //get the cell number
-      const cell = parseInt(line.split("cell=")[1].split(" ")[0]);
-
-      if (cell) {
-        await updateCell(date, cell, true);
-      }
-    } else if (line.includes("<offlver_result_free>")) {
-      console.log(`Found free cell in line ${i + 1}: ${line}`);
-
-      const time = line.substring(1, 13);
-
-      //turn the time into a date with todays date
-      const date = new Date();
-      const timeSplit = time.split(":");
-      date.setHours(parseInt(timeSplit[0]));
-      date.setMinutes(parseInt(timeSplit[1]));
-      date.setSeconds(parseInt(timeSplit[2].split(".")[0]));
-      date.setMilliseconds(parseInt(timeSplit[2].split(".")[1]));
-
-      //get the cell number
-      const cell = parseInt(line.split("cell=")[1].split(" ")[0]);
-
-      if (cell) {
-        await updateCell(date, cell, false);
-      }
-    }
+export async function checkForDisabledCells(line: string, i: number, totalLines: number, filePath: string) {
+  //does the cell contain a "cell"
+  if (!line.includes("cell=")) {
+    return;
   }
 
+  //new test
+  if (line.includes("<bk_offlver>") && line.includes("disabled cell")) {
+    // console.log(`Found disabled cell in line ${i + 1}: ${line}`);
+
+    const time = line.substring(1, 13);
+
+    //turn the time into a date with todays date
+    const date = new Date();
+    const timeSplit = time.split(":");
+    date.setHours(parseInt(timeSplit[0]));
+    date.setMinutes(parseInt(timeSplit[1]));
+    date.setSeconds(parseInt(timeSplit[2].split(".")[0]));
+    date.setMilliseconds(parseInt(timeSplit[2].split(".")[1]));
+
+    //get the cell number
+    const cell = parseInt(line.split("cell=")[1].split(" ")[0]);
+
+    if (cell) {
+      await updateCell(date, cell, true);
+    }
+  } else if (line.includes("<offlver_result_free>")) {
+    // console.log(`Found free cell in line ${i + 1}: ${line}`);
+
+    const time = line.substring(1, 13);
+
+    //turn the time into a date with todays date
+    const date = new Date();
+    const timeSplit = time.split(":");
+    date.setHours(parseInt(timeSplit[0]));
+    date.setMinutes(parseInt(timeSplit[1]));
+    date.setSeconds(parseInt(timeSplit[2].split(".")[0]));
+    date.setMilliseconds(parseInt(timeSplit[2].split(".")[1]));
+
+    //get the cell number
+    const cell = parseInt(line.split("cell=")[1].split(" ")[0]);
+
+    if (cell) {
+      await updateCell(date, cell, false);
+    }
+  }
+}
+
+export async function finalizeDisabledCellsCheck() {
   //cell 0 is always disabled but the sorter does not have a cell 0, this will the last update timestamp for this function
   //do we need to add a cell 0 to the database?
   const cell0 = await db.sorterDisabledCells.findFirst({
@@ -133,72 +111,60 @@ export async function checkForDisabledCells(path: string) {
       },
     });
   }
-  console.log("Finished checking for disabled cells");
+
+  // push cellLog to the database
+  for (let i = 0; i < cellLog.length; i++) {
+    //has the cell changed?
+    if (cellLog[i].hasChanged !== true) {
+      continue;
+    }
+
+    //does this cell exist in the database?
+    const cellInDB = await db.sorterDisabledCells.findFirst({
+      where: {
+        cellNumber: i + 1,
+      },
+    });
+
+    if (cellInDB) {
+      //update the cell in the database
+      await db.sorterDisabledCells.update({
+        where: {
+          id: cellInDB.id,
+        },
+        data: {
+          disabled: cellLog[i].disabled,
+          dateChanged: cellLog[i].dateChanged,
+          date: new Date(),
+        },
+      });
+    } else {
+      //create the cell in the database
+      await db.sorterDisabledCells.create({
+        data: {
+          cellNumber: i + 1,
+          disabled: cellLog[i].disabled,
+          dateChanged: cellLog[i].dateChanged,
+          date: new Date(),
+        },
+      });
+    }
+  }
 }
 
 async function updateCell(date: Date, cell: number, disabled: boolean) {
   if (cellLog[cell - 1] == undefined) {
     cellLog[cell - 1] = {
       disabled: disabled,
+      dateChanged: date,
+      hasChanged: true,
     };
   }
 
-  cellLog[cell - 1].disabled = disabled;
-
-  const cellDB = await db.sorterDisabledCells.findFirst({
-    where: {
-      cellNumber: cell,
-    },
-  });
-
-  console.log(`Found cell ${cell} in database: ${cellDB ? "yes" : "no"}`);
-
-  //if the cell is already in the database then update it
-  if (cellDB == undefined) {
-    await db.sorterDisabledCells.create({
-      data: {
-        cellNumber: cell,
-        disabled: disabled,
-        date: date,
-        dateChanged: date,
-      },
-    });
-  }
-
   //has the disabled state changed?
-  if (cellDB && cellDB.disabled !== disabled) {
-    console.log(`Cell ${cell} disabled state changed from ${cellDB.disabled} to ${disabled}`);
-    await db.sorterDisabledCells.update({
-      where: {
-        id: cellDB.id,
-      },
-      data: {
-        disabled: disabled,
-        date: date,
-        dateChanged: date,
-      },
-    });
-
-    // make history of changes
-    await db.sorterDisabledCellsHistory.create({
-      data: {
-        cellNumber: cell,
-        disabled: disabled,
-        date: date,
-        dateChanged: date,
-      },
-    });
-  } else {
-    //only update the date (last checked)
-    if (cellDB) {
-      await db.sorterDisabledCells.update({
-        where: {
-          id: cellDB.id,
-        },
-        data: {
-          date: date,
-        },
-      });
-    }
+  if (cellLog[cell - 1].disabled !== disabled) {
+    cellLog[cell - 1].disabled = disabled;
+    cellLog[cell - 1].dateChanged = date;
+    cellLog[cell - 1].hasChanged = true;
   }
 }
