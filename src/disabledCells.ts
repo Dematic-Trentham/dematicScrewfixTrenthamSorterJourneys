@@ -149,6 +149,16 @@ export async function finalizeDisabledCellsCheck() {
         },
       });
     }
+
+    //make a history log of the disabled cells for this run
+    await db.sorterDisabledCellsHistory.create({
+      data: {
+        cellNumber: i + 1,
+        disabled: cellLog[i].disabled,
+        dateChanged: cellLog[i].dateChanged,
+        date: new Date(),
+      },
+    });
   }
 }
 
