@@ -75,7 +75,7 @@ export async function checkForHasNotSeenEnd() {
     await db.sorterEncoderHasNotSeenCell.create({
       data: {
         createdAt: new Date(),
-        cell: cell,
+        cell: cell - 1,
         countPerHour: count,
       },
     });
