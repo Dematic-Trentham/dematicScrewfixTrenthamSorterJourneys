@@ -6,7 +6,7 @@ FROM base AS builder
 # Set the working directory
 WORKDIR /app
 
-RUN apt-get update && apt-get install --no-cache git git --virtual .gyp python3 make g++
+#RUN apt-get update && apt-get install --no-cache git git --virtual .gyp python3 make g++
 RUN apt-get update && apt-get install -y \
     git \
     python3 \
