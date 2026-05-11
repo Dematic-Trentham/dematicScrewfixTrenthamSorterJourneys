@@ -1,0 +1,29 @@
+model sorterDisabledCells {
+    id                   String   @id @default(uuid())
+    date                 DateTime
+    cellNumber           Int
+    disabled             Boolean
+    dateChanged        DateTime
+}
+
+model sorterDisabledCellsHistory {
+    id                   String   @id @default(uuid())
+    date                 DateTime
+    cellNumber           Int
+    disabled             Boolean
+    dateChanged        DateTime
+}
+
+model sorterCellStats {
+  id                   String   @id @default(uuid())
+  date                 DateTime
+  cellId               String
+  badPositionsTotal    Int
+  badPositionsForward  Int
+  badPositionsBackward Int
+  recenteredTotal      Int
+  recenteredLeft       Int
+  recenteredRight      Int
+  recirculatedTotal    Int
+  totalInducts         Int
+}

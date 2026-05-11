@@ -1,0 +1,8 @@
+model siteParameters {
+  id          String   @id @default(uuid())
+  lastUpdated DateTime @default(now())
+  name        String   @unique
+  location    String
+  description String
+  value       String
+}

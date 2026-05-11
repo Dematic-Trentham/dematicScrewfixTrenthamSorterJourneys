@@ -1,0 +1,18 @@
+model dashboardUsers {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String
+  department  String   @default("")
+  profilePic  String   @default("")
+  password    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  permissions String   @default("")
+  disabled    Boolean  @default(false)
+}
+
+model dashboardUsersPermissions {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+}

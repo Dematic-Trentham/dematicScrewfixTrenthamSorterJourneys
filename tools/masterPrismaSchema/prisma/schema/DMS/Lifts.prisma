@@ -1,0 +1,7 @@
+model DMSLiftMovements {
+  ID          Int                   @id @default(autoincrement())
+  timestamp   DateTime
+  aisle       Int
+  liftNumber  Int
+  totalAtTime Int
+}

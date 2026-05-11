@@ -1,0 +1,13 @@
+model sorterEncoderHasNotSeenCell {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  cell      Int
+  countPerHour Int
+}
+
+model sorterEncoderHasSeenPhotoCell {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  photoCell      Int
+  countPerHour Int
+}

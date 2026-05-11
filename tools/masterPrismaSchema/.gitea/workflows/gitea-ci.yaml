@@ -1,0 +1,18 @@
+name: Build And Test
+run-name: ${{ gitea.actor }} is runs ci pipeline
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - name: Use Node.js
+        uses: https://github.com/actions/setup-node@v3
+        with:
+          node-version: "18.17"
+      - run: npm install --force
+      - run: npm run prisma-gen
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
+          RUNNER_TOOL_CACHE: /toolcache

@@ -1,0 +1,11 @@
+model dashboardSystemProcesses {
+  id               String    @id @default(uuid())
+  processName      String    @unique
+  description      String?
+  lastWatchdog     DateTime?
+  lastCrash        DateTime?
+  lastCrashMessage String?
+  lastCrashStack   String?
+  crashCount       Int?      @default(0)
+  required         Boolean   @default(false)
+}

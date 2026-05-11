@@ -1,0 +1,20 @@
+model autoCartonFaults {
+  ID          Int                   @id @default(autoincrement())
+  timestamp   DateTime
+  line        Int
+  machineType autoCartonMachineType
+  faultCode   Int
+}
+
+model autoCartonFaultCodeLookup {
+  ID           Int    @id @default(autoincrement())
+  faultMessage String
+}
+
+enum autoCartonMachineType {
+  Lidder
+  iPack
+  labeler
+  erector
+  barcoder
+}

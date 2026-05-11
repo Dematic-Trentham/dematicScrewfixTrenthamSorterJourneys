@@ -1,0 +1,9 @@
+model dashboardSystemParameters {
+  ID           Int       @id @default(autoincrement())
+  parameter    String    @unique(map: "parameter") @default("0") @db.VarChar(75)
+  value        String    @db.Text
+  lastModified DateTime? @default(now()) @db.Timestamp(0)
+  hidden       Bytes?    @default(dbgenerated("0x31")) @db.Binary(1)
+
+  @@index([parameter], map: "key")
+}

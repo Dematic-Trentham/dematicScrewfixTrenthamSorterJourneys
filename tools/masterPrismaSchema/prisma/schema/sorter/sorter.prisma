@@ -1,0 +1,55 @@
+model sorterJourneyRequests {
+  id                      String    @id @default(uuid())
+  requestedUL             String
+  createdDate             DateTime  @default(now())
+  updatedDate             DateTime  @updatedAt
+  processingStartedDate   DateTime?
+  processingCompletedDate DateTime?
+  status                  String
+  error                   String?
+  journey                 String    @db.LongText
+  currentStatusStep       String?
+}
+
+model sorterInductStats {
+  id                   String   @id @default(uuid())
+  date                 DateTime
+  inductNumber         Int
+  badPositionsTotal    Int
+  badPositionsForward  Int
+  badPositionsBackward Int
+  recenteredTotal      Int
+  recenteredLeft       Int
+  recenteredRight      Int
+  recirculatedTotal    Int
+  totalInducts         Int
+}
+
+model sorterChuteStats {
+  id                   String   @id @default(uuid())
+  date                 DateTime
+  chuteNumber          Int
+  badPositionsTotal    Int
+  badPositionsForward  Int
+  badPositionsBackward Int
+  recenteredTotal      Int
+  recenteredLeft       Int
+  recenteredRight      Int
+  recirculatedTotal    Int
+  totalInducts         Int
+}
+
+
+model sortetStopsStats {
+  id                   String   @id @default(uuid())
+  stopDate                 DateTime
+  restartDate              DateTime
+  location             Int
+  UL                   String
+  foundOnCell          Int
+  wmsCell              Int  
+  inductNumber         Int
+  chuteNumber          Int
+  messuredWeight       Float
+  actualWeight         Float
+}

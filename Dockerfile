@@ -49,6 +49,9 @@ RUN apt-get update && apt-get install -y git openssh-client
 # Copy the rest of the application
 COPY . .
 
+#from /tools/masterPrismaSchema copy the prisma folder to /node_modules/masterPrismaSchema
+COPY ./tools/masterPrismaSchema ./node_modules/masterPrismaSchema
+
 #show files in the /node_modules/masterPrismaSchema/
 RUN ls -l /node_modules/masterPrismaSchema/
 
