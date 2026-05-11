@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y \
 
 # Copy package.json and package-lock.json
 COPY package.json ./
-
+RUN npm install --verbose
 # Install dependencies
 RUN npm install --legacy-peer-deps
 RUN npm install -g typescript
@@ -46,7 +46,7 @@ RUN apt-get update && apt-get install -y git openssh-client
 
 # Copy the rest of the application
 COPY . .
-
+.
 #show files in the /node_modules/masterPrismaSchema/
 RUN ls -l /node_modules/masterPrismaSchema/
 
