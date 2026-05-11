@@ -7,6 +7,17 @@ FROM base AS builder
 WORKDIR /app
 
 RUN apt-get update && apt-get install --no-cache git git --virtual .gyp python3 make g++
+RUN apt-get update && apt-get install -y \
+    git \
+    python3 \
+    make \
+    g++ \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+ && rm -rf /var/lib/apt/lists/*
 
 # Copy package.json and package-lock.json
 COPY package.json ./
@@ -16,7 +27,20 @@ RUN npm install --legacy-peer-deps
 RUN npm install -g typescript
 
 # Install OpenSSL
-RUN apt-get update && apt-get install --no-cache openssl git --virtual .gyp python3 make g++
+#RUN apt-get update && apt-get install --no-cache openssl git --virtual .gyp python3 make g++
+RUN apt-get update && apt-get install -y \
+openssl \
+    git \
+    python3 \
+    make \
+    g++ \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+ && rm -rf /var/lib/apt/lists/*
+
 
 
 # Copy the rest of the application
@@ -33,7 +57,19 @@ RUN ls -l
 FROM base AS production
 
 # Install OpenSSL
-RUN apt-get update && apt-get install --no-cache openssl git --virtual .gyp python3 make g++
+#RUN apt-get update && apt-get install --no-cache openssl git --virtual .gyp python3 make g++
+RUN apt-get update && apt-get install -y \
+openssl \
+    git \
+    python3 \
+    make \
+    g++ \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+ && rm -rf /var/lib/apt/lists/*
 
 
 # Set the working directory
