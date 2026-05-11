@@ -34,7 +34,7 @@
   "devDependencies": {
     "@types/node-cron": "^3.0.11",
     "@types/ssh2-sftp-client": "^9.0.4",
-    "masterPrismaSchema": "git+ssh://git@github.com/jameswlyons/dematicDashboardScrewfixTrenthamMasterPrismaSchema.git",
+    "masterPrismaSchema": "git+https://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:x-oauth-basic@github.com/jameswlyons/dematicDashboardScrewfixTrenthamMasterPrismaSchema.git",
     "prisma": "^5.19.1"
   }
 }
