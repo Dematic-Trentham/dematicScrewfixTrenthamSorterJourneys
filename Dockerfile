@@ -6,7 +6,7 @@ FROM base AS builder
 # Set the working directory
 WORKDIR /app
 
-RUN apk-get add --no-cache git git --virtual .gyp python3 make g++
+RUN apt-get add --no-cache git git --virtual .gyp python3 make g++
 
 # Copy package.json and package-lock.json
 COPY package.json ./
@@ -16,7 +16,7 @@ RUN npm install --legacy-peer-deps
 RUN npm install -g typescript
 
 # Install OpenSSL
-RUN apk-get add --no-cache openssl git --virtual .gyp python3 make g++
+RUN apt-get add --no-cache openssl git --virtual .gyp python3 make g++
 
 
 # Copy the rest of the application
@@ -33,7 +33,7 @@ RUN ls -l
 FROM base AS production
 
 # Install OpenSSL
-RUN apk-get add --no-cache openssl git --virtual .gyp python3 make g++
+RUN apt-get add --no-cache openssl git --virtual .gyp python3 make g++
 
 
 # Set the working directory
