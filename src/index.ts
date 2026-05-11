@@ -8,14 +8,14 @@
 import "dotenv/config";
 
 import cron from "node-cron";
-import fs from "fs";
+import fs, { mkdir } from "fs";
 import { downloadNewFilesFromSFTPHost, sftpClientSettings, getFilesInDirectory, downloadFileFromSFTPHost } from "./helpers/sftpDownloader.js";
 
 import db from "./db/db.js";
 
 import { runAnalysisOnRequestedUL } from "./runAnalysisOnRequestedUL.js";
 
-const testingMode = false;
+const testingMode = process.env.TESTING_MODE === "true" || false;
 
 //startup text
 console.log("Dematic Dashboard Micro Service - Screwfix Sorter Journeys");
@@ -31,6 +31,7 @@ const hostConfig: sftpClientSettings = {
 //import process tracker and start the process
 import { exec, ExecException } from "child_process";
 import { readFileLineByLine } from "./lineReader.js";
+import { runYesterdayDayAnalysis } from "./dayAnalysis/dayAnalysis.js";
 
 //reboot every day at 00:15
 cron.schedule("15 0 * * *", () => {
@@ -60,7 +61,22 @@ async function startUp() {
   //re read for testing
   if (testingMode) {
     console.log("In testing mode, re-reading all files in ./trace/today");
+
+    //make yesterday date for the folder name
+    fs.mkdirSync("./trace/1dayago", { recursive: true });
+
+    const yesterdaydate = new Date();
+    yesterdaydate.setDate(yesterdaydate.getDate() - 1);
+
+    //get the day number for the folder name so 11/7/2023 would be 11
+    const dayNumber = yesterdaydate.getDate();
+
+    // await downloadNewFilesFromSFTPHost(hostConfig, "./trace/1dayago", "/xb/lg/trace/" + dayNumber);
+
+    await runYesterdayDayAnalysis();
+
     const localFiles = fs.readdirSync("./trace/today");
+
     for (const file of localFiles) {
       console.log(`Re-reading file: ${file}`);
       await readFileLineByLine(`./trace/today/${file}`);
@@ -113,52 +129,58 @@ cron.schedule("*/5 * * * * *", async () => {
 cron.schedule("0 0 * * *", async () => {
   cronMidnightIsRunning = true;
 
+  console.log("Running cron midnight");
+  console.log("Running cron midnight - Running Day Analysis");
+
   console.log("Deleting/ moving old data");
 
   //delete old trace folder /7dayago
   if (fs.existsSync("./trace/7dayago")) {
-    fs.rmdirSync("./trace/7dayago", { recursive: true });
+    await fs.promises.rmdir("./trace/7dayago", { recursive: true });
   }
 
   //move 6dayago to 7dayago
   if (fs.existsSync("./trace/6dayago")) {
-    fs.renameSync("./trace/6dayago", "./trace/7dayago");
+    await fs.promises.rename("./trace/6dayago", "./trace/7dayago");
   }
 
   //move 5dayago to 6dayago
   if (fs.existsSync("./trace/5dayago")) {
-    fs.renameSync("./trace/5dayago", "./trace/6dayago");
+    await fs.promises.rename("./trace/5dayago", "./trace/6dayago");
   }
 
   //move 4dayago to 5dayago
   if (fs.existsSync("./trace/4dayago")) {
-    fs.renameSync("./trace/4dayago", "./trace/5dayago");
+    await fs.promises.rename("./trace/4dayago", "./trace/5dayago");
   }
 
   //move 3dayago to 4dayago
   if (fs.existsSync("./trace/3dayago")) {
-    fs.renameSync("./trace/3dayago", "./trace/4dayago");
+    await fs.promises.rename("./trace/3dayago", "./trace/4dayago");
   }
 
   //move 2dayago to 3dayago
   if (fs.existsSync("./trace/2dayago")) {
-    fs.renameSync("./trace/2dayago", "./trace/3dayago");
+    await fs.promises.rename("./trace/2dayago", "./trace/3dayago");
   }
 
   //move 1dayago to 2dayago
   if (fs.existsSync("./trace/1dayago")) {
-    fs.renameSync("./trace/1dayago", "./trace/2dayago");
+    await fs.promises.rename("./trace/1dayago", "./trace/2dayago");
   }
 
   //move today /trace/today to /trace/1dayago
   if (fs.existsSync("./trace/today")) {
-    fs.renameSync("./trace/today", "./trace/1dayago");
+    await fs.promises.rename("./trace/today", "./trace/1dayago");
   }
 
   //delete old trace folder /trace
-  fs.mkdirSync("./trace/today", { recursive: true });
+  await fs.promises.mkdir("./trace/today", { recursive: true });
 
   console.log("Deleted old trace data");
+  await runYesterdayDayAnalysis();
+
+  //move the output of the day analysis to a folder with the date of yesterday, so we have a record of the day analysis for each day
 
   cronMidnightIsRunning = false;
 });

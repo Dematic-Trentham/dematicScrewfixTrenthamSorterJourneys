@@ -24,10 +24,20 @@ export async function downloadFileFromSFTPHost(clientSettings: sftpClientSetting
   //config for the ftp client
 
   //connect to the sftp server
-  await ftp.connect(clientSettings);
+  await ftp.connect({
+    host: clientSettings.host,
+    port: clientSettings.port,
+    username: clientSettings.username,
+    password: clientSettings.password,
+    highWaterMark: 1024 * 1024, // 1MB stream buffer
+    compress: false,
+    algorithms: {
+      cipher: ["aes128-gcm", "aes128-ctr"],
+    },
+  } as any);
 
   //download the file to the local machine
-  await ftp.get(pathToDownload, localDownloadPath);
+  await ftp.fastGet(pathToDownload, localDownloadPath);
 
   //disconnect from the sftp server
   await ftp.end();
@@ -63,7 +73,12 @@ export async function downloadFilesFromSFTPHost(clientSettings: sftpClientSettin
 }
 
 //download all files in a directory, that are not already in the local directory
-export async function downloadNewFilesFromSFTPHost(clientSettings: sftpClientSettings, localDownloadPath: string, pathToDownload: string) {
+export async function downloadNewFilesFromSFTPHost(
+  clientSettings: sftpClientSettings,
+  localDownloadPath: string,
+  pathToDownload: string,
+  reCheck: boolean = false,
+) {
   if (!fs.existsSync("./trace")) {
     fs.mkdirSync("./trace");
   }
@@ -82,8 +97,10 @@ export async function downloadNewFilesFromSFTPHost(clientSettings: sftpClientSet
 
       console.log(`Downloaded ${file.name}`);
 
-      //check for disabled cells on the new file
-      await readFileLineByLine(`${localDownloadPath}/${file.name}`);
+      if (reCheck) {
+        //check for disabled cells on the new file
+        await readFileLineByLine(`${localDownloadPath}/${file.name}`);
+      }
 
       mainProcessReporter("'Startup' - Downloading existing trace files currently downloading " + files.indexOf(file) + " of " + amountOfFiles);
     }

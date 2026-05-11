@@ -25,6 +25,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.19.1",
+    "canvas": "^3.2.3",
     "dotenv": "^16.4.5",
     "moment": "^2.30.1",
     "node-cron": "^3.0.3",
