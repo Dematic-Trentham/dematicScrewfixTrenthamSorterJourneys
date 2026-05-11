@@ -46,6 +46,11 @@ openssl \
 # Copy the rest of the application
 COPY . .
 
+#show files in the /node_modules/masterPrismaSchema/
+RUN ls -l /node_modules/masterPrismaSchema/
+
+
+
 RUN npm run prisma-merge
 
 # Build the application
