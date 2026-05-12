@@ -53,7 +53,7 @@ COPY . .
 COPY ./tools/masterPrismaSchema ./node_modules/masterPrismaSchema
 
 #show files in the /node_modules/masterPrismaSchema/
-RUN ls -l /node_modules/masterPrismaSchema/
+RUN ls -l ./node_modules/masterPrismaSchema/
 
 
 
