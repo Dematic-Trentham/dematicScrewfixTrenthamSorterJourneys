@@ -19,13 +19,11 @@ RUN apt-get update && apt-get install -y \
     librsvg2-dev \
  && rm -rf /var/lib/apt/lists/*
 
-# Copy package.json and package-lock.json
-COPY package.json ./
+# Copy dependency manifests first
+COPY package.json package-lock.json ./
 
-RUN npm install --verbose
-
-# Install dependencies
-RUN npm install --legacy-peer-deps
+# Install dependencies from lockfile to keep Prisma versions in sync
+RUN npm ci --legacy-peer-deps --verbose
 RUN npm install -g typescript
 
 # Install OpenSSL
@@ -50,7 +48,7 @@ RUN apt-get update && apt-get install -y git openssh-client
 COPY . .
 
 #from /tools/masterPrismaSchema copy the prisma folder to /node_modules/masterPrismaSchema
-COPY ./tools/masterPrismaSchema ./node_modules/masterPrismaSchema
+#COPY ./tools/masterPrismaSchema ./node_modules/masterPrismaSchema
 
 #show files in the /node_modules/masterPrismaSchema/
 RUN ls -l ./node_modules/masterPrismaSchema/
