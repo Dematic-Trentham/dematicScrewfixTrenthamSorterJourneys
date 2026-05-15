@@ -13,10 +13,10 @@
     "startDevDockInspect": "nodemon build/index.js --inspect-brk=0.0.0.0",
     "buildOnce": "tsc",
     "build": "tsc --watch",
-    "prisma-merge": "prisma format --schema=./node_modules/masterPrismaSchema/prisma/schema/ && npm run prisma-gen && echo 'complete!'",
-    "prisma-gen": "prisma generate --schema=./node_modules/masterPrismaSchema/prisma/schema",
-    "prisma-pull": "npx prisma db pull --schema=./node_modules/masterPrismaSchema/prisma/schema",
-    "prisma-push": "npx prisma db push --schema=./node_modules/masterPrismaSchema/prisma/schema",
+    "prisma-merge": "prisma format --schema=./node_modules/masterPrismaSchema/prisma && npm run prisma-gen && echo 'complete!'",
+    "prisma-gen": "prisma generate --schema=./node_modules/masterPrismaSchema/prisma",
+    "prisma-pull": "npx prisma db pull --schema=./node_modules/masterPrismaSchema/prisma",
+    "prisma-push": "npx prisma db push --schema=./node_modules/masterPrismaSchema/prisma",
     "packageJsonStripper": "node tools/packageJsonStripper.js",
     "build-docker": "docker build -t dematicscrewfixtrenthamsorterjourneys . --no-cache --progress=plain"
   },
@@ -24,7 +24,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^5.19.1",
+    "@prisma/adapter-mariadb": "^7.8.0",
+    "@prisma/client": "^7.4.2",
     "canvas": "^3.2.3",
     "dotenv": "^16.4.5",
     "moment": "^2.30.1",
@@ -36,6 +37,6 @@
     "@types/node-cron": "^3.0.11",
     "@types/ssh2-sftp-client": "^9.0.4",
     "masterPrismaSchema": "git+https://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:x-oauth-basic@github.com/jameswlyons/dematicDashboardScrewfixTrenthamMasterPrismaSchema.git",
-    "prisma": "^5.19.1"
+    "prisma": "^7.4.2"
   }
 }

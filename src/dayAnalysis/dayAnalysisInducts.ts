@@ -2,12 +2,19 @@ const folderName = "./trace/today";
 
 import * as fs from "fs";
 import * as path from "path";
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas } from "canvas";
+import db from "../db/db.js";
 
 let inductArray = [] as Array<{ induct: string; OFFLV_ANALYZINGPK: Array<{ start: number; middle: number; end: number; total: number }> }>;
 let cellArray = [] as Array<{ cell: string; OFFLV_ANALYZINGPK: Array<{ start: number; middle: number; end: number; total: number }> }>;
 
-export async function runDayAnalysisInducts(folderPath: string, outputFolderPath: string) {
+let inductByUlType = {} as {
+  [key: string]: { induct: string; OFFLV_ANALYZINGPK: Array<{ start: number; middle: number; end: number; total: number }> }[];
+};
+
+const testingMode = process.env.TESTING_MODE === "true" || false;
+
+export async function runDayAnalysisInducts(folderPath: string, outputFolderPath: string, date: string) {
   //console.log(`Running day analysis inducts for folder: ${folderPath} and outputting to folder: ${outputFolderPath}`);
 
   //find all the files in the trace folder
@@ -29,8 +36,13 @@ export async function runDayAnalysisInducts(folderPath: string, outputFolderPath
 
   const laserModByInduct = {} as { [key: string]: { avg: number; count: number; values: Array<number>; total: number } };
 
+  let FileLimit = process.env.TESTING_MODE_FILE_LIMIT ? parseInt(process.env.TESTING_MODE_FILE_LIMIT) : 5;
+
   //read each file line by line
-  files.forEach((file) => {
+  files.forEach((file, index) => {
+    if (index >= FileLimit) {
+      return;
+    }
     const filePath = path.join(folderPath, file);
 
     //read file to array of lines
@@ -60,6 +72,10 @@ export async function runDayAnalysisInducts(folderPath: string, outputFolderPath
         //console.log(`Induct: ${induct}`);
 
         const ul = line.split("c_isc=<")[1]?.split(">")[0] ?? "";
+
+        //get first 2 digits of the ul
+        const ulFirst2Digits = ul.substring(0, 2);
+        //console.log(`UL First 2 Digits: ${ulFirst2Digits}`);
 
         //read the file until we find the line that contains 'OFFLVER' and '<cellver_parcel_not_on_cell>' and 'cell=x'
 
@@ -119,8 +135,8 @@ export async function runDayAnalysisInducts(folderPath: string, outputFolderPath
 
               //if (totalLength === 35) {
               OFFLV_ANALYZINGPK.push({ device, start, middle, end, total: totalLength });
-
-              inductArray.push({ induct, OFFLV_ANALYZINGPK });
+              const inductWithUL = induct + " (UL" + ulFirst2Digits + ")";
+              inductArray.push({ induct: inductWithUL, OFFLV_ANALYZINGPK });
               cellArray.push({ cell, OFFLV_ANALYZINGPK });
               // }
             }
@@ -184,15 +200,15 @@ export async function runDayAnalysisInducts(folderPath: string, outputFolderPath
                 laserMod = (laserLeftAvg - laserRightAvg) / 2;
 
                 //      console.log("Ul is: " + ul + " induct is: " + induct + " cell is: " + cell + " laserMod is: " + laserMod);
-
-                if (laserModByInduct[induct] == undefined) {
-                  laserModByInduct[induct] = { avg: laserMod, count: 1, values: [laserMod], total: laserMod };
+                const inductWithUL = induct + " (UL" + ulFirst2Digits + ")";
+                if (laserModByInduct[inductWithUL] == undefined) {
+                  laserModByInduct[inductWithUL] = { avg: laserMod, count: 1, values: [laserMod], total: laserMod };
                 } else {
-                  laserModByInduct[induct].count += 1;
-                  laserModByInduct[induct].total = laserModByInduct[induct].total + laserMod;
-                  laserModByInduct[induct].avg = laserModByInduct[induct].total / laserModByInduct[induct].count;
+                  laserModByInduct[inductWithUL].count += 1;
+                  laserModByInduct[inductWithUL].total = laserModByInduct[inductWithUL].total + laserMod;
+                  laserModByInduct[inductWithUL].avg = laserModByInduct[inductWithUL].total / laserModByInduct[inductWithUL].count;
 
-                  laserModByInduct[induct]?.values.push(laserMod);
+                  laserModByInduct[inductWithUL]?.values.push(laserMod);
                 }
               }
 
@@ -250,11 +266,11 @@ export async function runDayAnalysisInducts(folderPath: string, outputFolderPath
     }
     console.log(`Finished reading file: ${file}`);
 
-    console.log(`Laser Mod by Induct so far: ${JSON.stringify(laserModByInduct, null, 2)}`);
+    //console.log(`Laser Mod by Induct so far: ${JSON.stringify(laserModByInduct, null, 2)}`);
   });
 
-  console.log(`Longest Journey: ${longestJourney}`);
-  console.log(longestJourneyArr);
+  //console.log(`Longest Journey: ${longestJourney}`);
+  //console.log(longestJourneyArr);
 
   //write the longest journey to a file called longest_journey.json
   fs.writeFileSync(path.join(outputFolderPath, "./longest_journey.json"), JSON.stringify(longestJourneyArr, null, 2));
@@ -383,20 +399,96 @@ export async function runDayAnalysisInducts(folderPath: string, outputFolderPath
     }
   }
 
-  console.log(`Laser Mod by Induct: ${JSON.stringify(laserModByInduct2, null, 2)}`);
+  let laserModAmountsByInduct = {} as { [key: string]: number };
+
+  console.log(inductArray2);
+
+  for (const induct in inductArray2) {
+    const laserData = laserModByInduct[induct];
+    if (laserData) {
+      laserModAmountsByInduct[induct] = laserData.count;
+    } else {
+      laserModAmountsByInduct[induct] = 0;
+    }
+  }
+
+  //console.log(`Laser Mod by Induct: ${JSON.stringify(laserModByInduct2, null, 2)}`);
   //write the laserModByInduct to a file called laser_mod_by_induct.json
   fs.writeFileSync(path.join(outputFolderPath, "./laser_mod_by_induct.json"), JSON.stringify(laserModByInduct2, null, 2));
+
+  await sendDayAnalysisInductsToDB(inductAverage, cellAverage, laserModByInduct2, date, laserModAmountsByInduct);
 
   for (const induct in laserModByInduct) {
     const laser = laserModByInduct[induct];
 
     const inductData = newiductArray2[induct];
 
-    createInductImage(induct, inductData?.start ?? 0, inductData?.middle ?? 0, inductData?.end ?? 0, laser?.avg ?? 0, outputFolderPath);
+    /* createInductImage(
+      induct,
+      inductData?.start ?? 0,
+      inductData?.middle ?? 0,
+      inductData?.end ?? 0,
+      laser?.avg ?? 0,
+      outputFolderPath,
+      inductData?.count ?? 0,
+    ); */
   }
+
+  let inductArray3 = [] as Array<{ induct: string; start: number; middle: number; end: number; total: number; count: number }>;
+
+  //inductArray New
+  inductArray.forEach((item) => {
+    item.OFFLV_ANALYZINGPK.forEach((pk) => {
+      inductArray3.push({
+        induct: item.induct,
+        start: pk.start,
+        middle: pk.middle,
+        end: pk.end,
+        total: pk.total,
+        count: 1,
+      });
+    });
+  });
+
+  let inductArray4 = {} as { [key: string]: { induct: string; start: number; middle: number; end: number; total: number; count: number } };
+
+  for (const item of inductArray3) {
+    if (inductArray4[item.induct] == undefined) {
+      inductArray4[item.induct] = {
+        induct: item.induct,
+        start: item.start,
+        middle: item.middle,
+        end: item.end,
+        total: item.total,
+        count: 1,
+      };
+    } else {
+      const inductData = inductArray4[item.induct];
+      if (inductData) {
+        inductData.start += item.start;
+        inductData.middle += item.middle;
+        inductData.end += item.end;
+        inductData.total += item.total;
+        inductData.count += 1;
+      }
+    }
+  }
+
+  //divide each value by the count to get the average
+  for (const induct in inductArray4) {
+    const inductData = inductArray4[induct];
+    if (inductData) {
+      inductData.start = inductData.start / inductData.count;
+      inductData.middle = inductData.middle / inductData.count;
+      inductData.end = inductData.end / inductData.count;
+      inductData.total = inductData.total / inductData.count;
+    }
+  }
+
+  fs.writeFileSync(path.join(outputFolderPath, "./induct_detailed.json"), JSON.stringify(inductArray4, null, 2));
 }
 
-function createInductImage(induct: string, front: number, middle: number, end: number, laserAvg: number, outputFolderPath: string) {
+function createInductImage(induct: string, front: number, middle: number, end: number, laserAvg: number, outputFolderPath: string, count?: number) {
   const width = 1000;
   const height = 1400;
   const canvas = createCanvas(width, height);
@@ -435,6 +527,11 @@ function createInductImage(induct: string, front: number, middle: number, end: n
   ctx.fill();
   ctx.font = "20px Arial";
   ctx.fillText("Direction of Travel", width / 2 - 90, height - 80);
+
+  //text for amount of parcels
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  ctx.fillText(`Count: ${count ?? "N/A"}`, width / 2 - 30, height - 50);
 
   //make a black rectangle in the middle of the canvas with the size of 690x860
   ctx.fillStyle = "black";
@@ -517,4 +614,76 @@ function createInductImage(induct: string, front: number, middle: number, end: n
   }
 
   fs.writeFileSync(path.join(inductImagesFolder, `induct_${induct}.png`), buffer);
+
+  //add to database with induct name and laser average and front and end values
+}
+
+async function sendDayAnalysisInductsToDB(
+  inductAverage: Array<{ induct: string; start: number; middle: number; end: number; total: number }>,
+  cellAverage: Array<{ cell: string; start: number; middle: number; end: number; total: number }>,
+  laserModByInduct: Array<{ induct: string; avg: number; count: number; total: number }>,
+  date: string,
+  laserModAmountsByInduct: { [key: string]: number },
+) {
+  console.log("Sending day analysis inducts to database...");
+  console.log(`Induct Average: ${JSON.stringify(inductAverage, null, 2)}`);
+  console.log(`Cell Average: ${JSON.stringify(cellAverage, null, 2)}`);
+  console.log(`Laser Mod by Induct: ${JSON.stringify(laserModByInduct, null, 2)}`);
+  console.log(`Laser Mod Amounts by Induct: ${JSON.stringify(laserModAmountsByInduct, null, 2)}`);
+
+  //send the data to the database
+
+  let dayAnalysis = [] as Array<{
+    inductNumber: number;
+    ul2Digits: string;
+    startingPosition: number;
+    middlePosition: number;
+    endPosition: number;
+    positionTotal: number;
+    laserModAvg: number;
+    laserModtotal: number;
+  }>;
+
+  inductAverage.forEach((induct) => {
+    const laserData = laserModByInduct.find((laser) => laser.induct === induct.induct);
+    //console.log(`Processing induct: ${induct.induct} with laser data: ${laserData ? JSON.stringify(laserData) : "No laser data found"}`);
+
+    const ul2Digits = induct.induct.split(" ")[1] ?? "";
+    const laserModCount = laserModAmountsByInduct[induct.induct] ?? 0;
+
+    dayAnalysis.push({
+      inductNumber: parseInt(induct.induct.split(" ")[0].replace("Induct", "")),
+      ul2Digits: ul2Digits,
+      startingPosition: induct.start,
+      middlePosition: induct.middle,
+      endPosition: induct.end,
+      positionTotal: induct.total,
+      laserModAvg: laserData ? laserData.avg : 0,
+      laserModtotal: laserModCount,
+    });
+
+    // console.log(`Induct: ${induct.induct}, Start: ${induct.start}, Middle: ${induct.middle}, End: ${induct.end}, Total: ${induct.total}, Laser Mod Avg: ${laserData ? laserData.avg : 0}`);
+  });
+
+  const endOfdayDate = new Date(date);
+  endOfdayDate.setHours(23, 59, 59, 999);
+
+  //insert dayAnalysis into the database with the date
+  for (const analysis of dayAnalysis) {
+    await db.sorterInductPositionStats.create({
+      data: {
+        date: endOfdayDate,
+        inductNumber: analysis.inductNumber,
+        UL2: analysis.ul2Digits,
+        startingPosition: analysis.startingPosition,
+        middlePosition: analysis.middlePosition,
+        endPosition: analysis.endPosition,
+        positionTotal: analysis.positionTotal,
+        laserModAvg: analysis.laserModAvg,
+        laserModtotal: analysis.laserModtotal,
+        laserModMin: 0,
+        laserModMax: 0,
+      },
+    });
+  }
 }

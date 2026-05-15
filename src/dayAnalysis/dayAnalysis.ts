@@ -4,6 +4,8 @@ import { runDayAnalysisInducts } from "./dayAnalysisInducts.js";
 
 import fs from "fs";
 
+const testingMode = process.env.TESTING_MODE === "true" || false;
+
 export async function runYesterdayDayAnalysis() {
   console.log("Running day analysis");
 
@@ -17,7 +19,7 @@ export async function runYesterdayDayAnalysis() {
 
   fs.mkdirSync(outputFolderPath, { recursive: true });
 
-  await runDayAnalysisInducts(folderPath, outputFolderPath);
+  await runDayAnalysisInducts(folderPath, outputFolderPath, dateString);
 }
 
 export async function runTodayDayAnalysis() {
@@ -32,5 +34,5 @@ export async function runTodayDayAnalysis() {
 
   fs.mkdirSync(outputFolderPath, { recursive: true });
 
-  await runDayAnalysisInducts(folderPath, outputFolderPath);
+  await runDayAnalysisInducts(folderPath, outputFolderPath, dateString);
 }
