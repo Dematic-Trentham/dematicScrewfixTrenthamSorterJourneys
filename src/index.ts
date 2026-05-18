@@ -17,16 +17,6 @@ import { runAnalysisOnRequestedUL } from "./runAnalysisOnRequestedUL.js";
 
 const testingMode = process.env.TESTING_MODE === "true" || false;
 
-//every 5 seconds show ram usage of this service
-setInterval(() => {
-  const used = process.memoryUsage();
-  for (let key in used) {
-    const memoryKey = key as keyof NodeJS.MemoryUsage;
-    //in bright cyan log the memory usage
-    console.log(`\x1b[36m${memoryKey} ${Math.round((used[memoryKey] / 1024 / 1024) * 100) / 100} MB\x1b[0m`);
-  }
-}, 5000);
-
 //startup text
 console.log("Dematic Dashboard Micro Service - Screwfix Sorter Journeys");
 
