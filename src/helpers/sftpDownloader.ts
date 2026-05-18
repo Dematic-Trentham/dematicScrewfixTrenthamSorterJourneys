@@ -97,10 +97,10 @@ export async function downloadNewFilesFromSFTPHost(
 
       console.log(`Downloaded ${file.name}`);
 
-      if (reCheck) {
-        //check for disabled cells on the new file
-        await readFileLineByLine(`${localDownloadPath}/${file.name}`);
-      }
+      //  if (reCheck) {
+      //check for disabled cells on the new file
+      await readFileLineByLine(`${localDownloadPath}/${file.name}`);
+      // }
 
       mainProcessReporter("'Startup' - Downloading existing trace files currently downloading " + files.indexOf(file) + " of " + amountOfFiles);
     }
